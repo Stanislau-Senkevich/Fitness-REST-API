@@ -1,0 +1,8 @@
+port: "8001"
+
+
+postgres_config:
+  postgres_host: "localhost"
+  postgres_port: "5433"
+  postgres_db_name: "postgres"
+  postgres_user: "postgres"
