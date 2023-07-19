@@ -1,12 +1,6 @@
-DROP TABLE trainers_workouts;
+DROP TABLE workouts;
 
-DROP TABLE users_workouts;
-
-DROP TABLE trainers_partnerships;
-
-DROP TABLE users_partnerships;
-
-DROP TABLE trainers;
+DROP TABLE partnerships;
 
 DROP TABLE users;
 

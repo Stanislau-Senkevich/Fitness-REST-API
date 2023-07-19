@@ -1,6 +1,4 @@
 .idea
+archive
 .bin
 .env
-passGen.go
-dataFiller.go
-testDataHelper.txt

@@ -8,13 +8,10 @@ import (
 )
 
 const (
-	adminTable                = "admins"
-	userTable                 = "users"
-	trainerTable              = "trainers"
-	usersWorkoutsTable        = "users_workouts"
-	trainersWorkoutsTable     = "trainers_workouts"
-	usersPartnershipsTable    = "users_partnerships"
-	trainersPartnerShipsTable = "trainers_partnerships"
+	adminTable        = "admins"
+	userTable         = "users"
+	workoutsTable     = "workouts"
+	partnershipsTable = "partnerships"
 )
 
 func InitPostgresDB(cfg *config.Config) (*sqlx.DB, error) {

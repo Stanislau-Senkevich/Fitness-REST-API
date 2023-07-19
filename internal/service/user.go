@@ -19,8 +19,8 @@ func NewUserService(repos repository.User, hashSalt string, signingKey string) *
 	return &UserService{repo: repos, hashSalt: hashSalt, signingKey: []byte(signingKey)}
 }
 
-func (s *UserService) SignIn(email, password string) (string, error) {
-	id, err := s.repo.Authorize(email, s.getPasswordHash(password))
+func (s *UserService) SignIn(email, password, role string) (string, error) {
+	id, err := s.repo.Authorize(email, s.getPasswordHash(password), role)
 	if err != nil {
 		return "", err
 	}
@@ -31,6 +31,7 @@ func (s *UserService) SignIn(email, password string) (string, error) {
 			IssuedAt:  time.Now().Unix(),
 		},
 		id,
+		role,
 	})
 
 	return token.SignedString(s.signingKey)
@@ -41,7 +42,7 @@ func (s *UserService) SignUp(user *entity.User) (int64, error) {
 	return s.repo.CreateUser(user)
 }
 
-func (s *UserService) ParseToken(token string) (int64, error) {
+func (s *UserService) ParseToken(token string) (int64, string, error) {
 	t, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -50,23 +51,39 @@ func (s *UserService) ParseToken(token string) (int64, error) {
 	})
 
 	if err != nil {
-		return -1, err
+		return -1, "", err
 	}
 
 	claims, ok := t.Claims.(*tokenClaims)
 	if !ok {
-		return -1, fmt.Errorf("error get user claims from token")
+		return -1, "", fmt.Errorf("error get user claims from token")
 	}
 
-	return claims.ID, nil
+	return claims.ID, claims.Role, nil
 }
 
 func (s *UserService) GetUser(id int64) (*entity.User, error) {
 	return s.repo.GetUser(id)
 }
 
-func (s *UserService) CreateWorkout(workout *entity.UserWorkout) (int64, error) {
-	return s.repo.CreateWorkout(workout)
+func (s *UserService) CreateWorkoutAsUser(workout *entity.Workout) (int64, error) {
+	return s.repo.CreateWorkoutAsUser(workout)
+}
+
+func (s *UserService) UpdateWorkout(workoutId, userId int64, update *entity.UpdateWorkout) error {
+	return s.repo.UpdateWorkout(workoutId, userId, update)
+}
+
+func (s *UserService) GetAllUserWorkouts(id int64) ([]*entity.Workout, error) {
+	return s.repo.GetAllUserWorkouts(id)
+}
+
+func (s *UserService) GetWorkoutById(workoutId, userId int64) (*entity.Workout, error) {
+	return s.repo.GetWorkoutById(workoutId, userId)
+}
+
+func (s *UserService) DeleteWorkout(workoutId, userId int64) error {
+	return s.repo.DeleteWorkout(workoutId, userId)
 }
 
 func (s *UserService) getPasswordHash(password string) string {

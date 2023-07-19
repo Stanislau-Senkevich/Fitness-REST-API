@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type staffSignInInput struct {
+type adminSignInInput struct {
 	Login    string `json:"login" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
@@ -49,7 +49,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.services.User.SignIn(input.Email, input.Password)
+	token, err := h.services.User.SignIn(input.Email, input.Password, "user")
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)
 		return
@@ -61,7 +61,7 @@ func (h *Handler) signIn(c *gin.Context) {
 }
 
 func (h *Handler) adminSignIn(c *gin.Context) {
-	var input staffSignInInput
+	var input adminSignInInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
@@ -79,13 +79,13 @@ func (h *Handler) adminSignIn(c *gin.Context) {
 }
 
 func (h *Handler) trainerSignIn(c *gin.Context) {
-	var input staffSignInInput
+	var input userSignInInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
 	}
 
-	token, err := h.services.Trainer.SignIn(input.Login, input.Password)
+	token, err := h.services.User.SignIn(input.Email, input.Password, "trainer")
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)
 		return

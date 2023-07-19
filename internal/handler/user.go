@@ -2,9 +2,11 @@ package handler
 
 import (
 	"Fitness_REST_API/internal/entity"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 const (
@@ -33,7 +35,7 @@ func (h *Handler) createWorkout(c *gin.Context) {
 		return
 	}
 
-	var input entity.UserWorkout
+	var input entity.Workout
 
 	if err = c.ShouldBindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
@@ -49,7 +51,7 @@ func (h *Handler) createWorkout(c *gin.Context) {
 		return
 	}
 
-	workoutId, err := h.services.User.CreateWorkout(&input)
+	workoutId, err := h.services.User.CreateWorkoutAsUser(&input)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -59,20 +61,80 @@ func (h *Handler) createWorkout(c *gin.Context) {
 	})
 }
 
-func (h *Handler) getAllWorkouts(c *gin.Context) {
-
+func (h *Handler) getUserWorkouts(c *gin.Context) {
+	id, err := h.getId(c, userCtx)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	w, err := h.services.User.GetAllUserWorkouts(id)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, w)
 }
 
 func (h *Handler) getWorkoutByID(c *gin.Context) {
+	userId, err := h.getId(c, userCtx)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 
+	workout, err := h.services.User.GetWorkoutById(workoutId, userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, workout)
 }
 
 func (h *Handler) updateWorkout(c *gin.Context) {
+	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id parameter"))
+		return
+	}
+
+	userId, err := h.getId(c, userCtx)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	var input entity.UpdateWorkout
+	if err = c.ShouldBindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	err = h.services.User.UpdateWorkout(workoutId, userId, &input)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"id": workoutId,
+	})
 
 }
 
 func (h *Handler) deleteWorkout(c *gin.Context) {
+	userId, err := h.getId(c, userCtx)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 
+	err = h.services.DeleteWorkout(workoutId, userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
 }
 
 func (h *Handler) getAllTrainers(c *gin.Context) {

@@ -53,14 +53,19 @@ func (h *Handler) trainerIdentity(c *gin.Context) {
 		return
 	}
 
-	id, err := h.services.Trainer.ParseToken(token)
+	id, role, err := h.services.User.ParseToken(token)
 
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)
 		return
 	}
 
-	c.Set(trainerCtx, id)
+	if role != "trainer" {
+		newErrorResponse(c, http.StatusForbidden, errors.New("forbidden"))
+		return
+	}
+
+	c.Set(userCtx, id)
 }
 
 func (h *Handler) userIdentity(c *gin.Context) {
@@ -69,7 +74,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		return
 	}
 
-	id, err := h.services.User.ParseToken(token)
+	id, _, err := h.services.User.ParseToken(token)
 
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)

@@ -4,10 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	trainerCtx = "trainerId"
-)
-
 func (h *Handler) getAllTrainerUsers(c *gin.Context) {
 
 }
@@ -40,7 +36,7 @@ func (h *Handler) denyRequest(c *gin.Context) {
 
 }
 
-func (h *Handler) addTrainerWorkout(c *gin.Context) {
+func (h *Handler) createTrainerWorkout(c *gin.Context) {
 
 }
 

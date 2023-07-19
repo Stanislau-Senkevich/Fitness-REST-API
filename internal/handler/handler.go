@@ -64,7 +64,7 @@ func (h *Handler) initTrainerRoutes(router *gin.Engine) {
 		trainer.POST("/request/:id", h.acceptRequest)
 		trainer.DELETE("/request/:id", h.denyRequest)
 
-		trainer.POST("/workout", h.addTrainerWorkout)
+		trainer.POST("/workout", h.createTrainerWorkout)
 		trainer.GET("/workout", h.getTrainerWorkouts)
 		trainer.GET("/workout/:id", h.getTrainerWorkoutByID)
 		trainer.GET("/workout/user/:id", h.getTrainerWorkoutsWithUser)
@@ -78,6 +78,8 @@ func (h *Handler) initUserRoutes(router *gin.Engine) {
 	{
 		user.GET("/", h.getUserInfo)
 
+		user.GET("/workout", h.getUserWorkouts)
+		user.GET("/workout/:id", h.getWorkoutByID)
 		user.POST("/workout", h.createWorkout)
 		user.PUT("/workout/:id", h.updateWorkout)
 		user.DELETE("/workout/:id", h.deleteWorkout)
