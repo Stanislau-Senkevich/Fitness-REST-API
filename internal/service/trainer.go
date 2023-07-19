@@ -19,21 +19,24 @@ func NewTrainerService(repos repository.Trainer, hashSalt string, signingKey str
 }
 
 func (s *TrainerService) SignIn(login, password string) (string, error) {
-	err := s.repos.Authorize(login, s.getPasswordHash(password))
+	id, err := s.repos.Authorize(login, s.getPasswordHash(password))
 	if err != nil {
 		return "", err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(tokenTTL).Unix(),
-		IssuedAt:  time.Now().Unix(),
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(tokenTTL).Unix(),
+			IssuedAt:  time.Now().Unix(),
+		},
+		id,
 	})
 
 	return token.SignedString(s.signingKey)
 }
 
-func (s *TrainerService) ParseToken(token string) error {
-	t, err := jwt.Parse(token, func(token *jwt.Token) (i interface{}, err error) {
+func (s *TrainerService) ParseToken(token string) (int64, error) {
+	t, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -41,15 +44,15 @@ func (s *TrainerService) ParseToken(token string) error {
 	})
 
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	_, ok := t.Claims.(jwt.MapClaims)
+	claims, ok := t.Claims.(*tokenClaims)
 	if !ok {
-		return fmt.Errorf("error get user claims from token")
+		return -1, fmt.Errorf("error get user claims from token")
 	}
 
-	return nil
+	return claims.ID, nil
 }
 
 func (s *TrainerService) getPasswordHash(password string) string {

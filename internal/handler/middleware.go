@@ -43,6 +43,7 @@ func (h *Handler) adminIdentity(c *gin.Context) {
 
 	if err := h.services.Admin.ParseToken(token); err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)
+		return
 	}
 }
 
@@ -52,9 +53,14 @@ func (h *Handler) trainerIdentity(c *gin.Context) {
 		return
 	}
 
-	if err := h.services.Trainer.ParseToken(token); err != nil {
+	id, err := h.services.Trainer.ParseToken(token)
+
+	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)
+		return
 	}
+
+	c.Set(trainerCtx, id)
 }
 
 func (h *Handler) userIdentity(c *gin.Context) {
@@ -63,7 +69,12 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		return
 	}
 
-	if err := h.services.User.ParseToken(token); err != nil {
+	id, err := h.services.User.ParseToken(token)
+
+	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)
+		return
 	}
+
+	c.Set(userCtx, id)
 }

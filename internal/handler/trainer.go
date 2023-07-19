@@ -4,6 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	trainerCtx = "trainerId"
+)
+
 func (h *Handler) getAllTrainerUsers(c *gin.Context) {
 
 }

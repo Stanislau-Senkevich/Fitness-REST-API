@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"Fitness_REST_API/internal/entity"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -19,8 +20,26 @@ type signInResponse struct {
 	Token string `json:"token"`
 }
 
-func (h *Handler) signUp(c *gin.Context) {
+type signUpResponse struct {
+	Id int64 `json:"id"`
+}
 
+func (h *Handler) signUp(c *gin.Context) {
+	var inputUser entity.User
+
+	if err := c.ShouldBindJSON(&inputUser); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	id, err := h.services.User.SignUp(&inputUser)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, signUpResponse{
+		Id: id,
+	})
 }
 
 func (h *Handler) signIn(c *gin.Context) {

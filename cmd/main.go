@@ -21,6 +21,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		err = db.Close()
+		if err != nil {
+			log.Panic("error due closing db")
+		}
+	}()
 
 	srv := new(server.Server)
 	repos := repository.NewRepository(db)

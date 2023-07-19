@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"Fitness_REST_API/internal/entity"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -16,7 +17,7 @@ func NewAdminRepository(db *sqlx.DB) *AdminRepository {
 func (r *AdminRepository) Authorize(login, passwordHash string) error {
 	var admin entity.Admin
 
-	query := "SELECT * FROM admins WHERE login =$1 AND password_hash = $2"
+	query := fmt.Sprintf("SELECT * FROM %s WHERE login =$1 AND password_hash = $2", adminTable)
 	err := r.db.Get(&admin, query, login, passwordHash)
 	return err
 }

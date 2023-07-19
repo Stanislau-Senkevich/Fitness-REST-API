@@ -23,18 +23,38 @@ CREATE TABLE trainers (
     created_at timestamp NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE partnerships (
+CREATE TABLE users_partnerships (
     id serial NOT NULL PRIMARY KEY,
-    user_id int REFERENCES users (id),
-    trainer_id int REFERENCES trainers (id),
-    status varchar(255) NOT NULL,
-    description varchar(255)
+    user_id int NOT NULL REFERENCES users(id),
+    trainer_id int NOT NULL REFERENCES trainers(id),
+    status varchar(255),
+    created_at timestamp NOT NULL DEFAULT NOW(),
+    ended_at timestamp
 );
 
-CREATE TABLE workouts (
+CREATE TABLE users_workouts (
+    id serial NOT NULL PRIMARY KEY,
+    title varchar(255) NOT NULL,
+    user_id int NOT NULL REFERENCES users (id),
+    trainer_id int REFERENCES trainers(id),
+    description varchar(255),
+    date timestamp NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE trainers_partnerships (
+    id serial NOT NULL PRIMARY KEY,
+    user_id int NOT NULL REFERENCES users (id),
+    trainer_id int NOT NULL REFERENCES trainers (id),
+    status varchar(255) NOT NULL,
+    created_at timestamp NOT NULL DEFAULT NOW(),
+    ended_at timestamp
+);
+
+CREATE TABLE trainers_workouts (
    id serial NOT NULL PRIMARY KEY,
-   user_id int REFERENCES users (id),
-   trainer_id int REFERENCES trainers (id),
+   title varchar(255) NOT NULL,
+   user_id int NOT NULL REFERENCES users(id),
+   trainer_id int NOT NULL REFERENCES trainers (id),
    description varchar(255),
    date timestamp NOT NULL DEFAULT NOW()
 )

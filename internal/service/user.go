@@ -1,6 +1,7 @@
 package service
 
 import (
+	"Fitness_REST_API/internal/entity"
 	"Fitness_REST_API/internal/repository"
 	"crypto/sha1"
 	"fmt"
@@ -9,31 +10,39 @@ import (
 )
 
 type UserService struct {
-	repos      repository.Trainer
+	repo       repository.User
 	hashSalt   string
 	signingKey []byte
 }
 
-func NewUserService(repos repository.Trainer, hashSalt string, signingKey string) *TrainerService {
-	return &TrainerService{repos: repos, hashSalt: hashSalt, signingKey: []byte(signingKey)}
+func NewUserService(repos repository.User, hashSalt string, signingKey string) *UserService {
+	return &UserService{repo: repos, hashSalt: hashSalt, signingKey: []byte(signingKey)}
 }
 
-func (s *UserService) SignIn(login, password string) (string, error) {
-	err := s.repos.Authorize(login, s.getPasswordHash(password))
+func (s *UserService) SignIn(email, password string) (string, error) {
+	id, err := s.repo.Authorize(email, s.getPasswordHash(password))
 	if err != nil {
 		return "", err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(tokenTTL).Unix(),
-		IssuedAt:  time.Now().Unix(),
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(tokenTTL).Unix(),
+			IssuedAt:  time.Now().Unix(),
+		},
+		id,
 	})
 
 	return token.SignedString(s.signingKey)
 }
 
-func (s *UserService) ParseToken(token string) error {
-	t, err := jwt.Parse(token, func(token *jwt.Token) (i interface{}, err error) {
+func (s *UserService) SignUp(user *entity.User) (int64, error) {
+	user.PasswordHash = s.getPasswordHash(user.PasswordHash)
+	return s.repo.CreateUser(user)
+}
+
+func (s *UserService) ParseToken(token string) (int64, error) {
+	t, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -41,15 +50,23 @@ func (s *UserService) ParseToken(token string) error {
 	})
 
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	_, ok := t.Claims.(jwt.MapClaims)
+	claims, ok := t.Claims.(*tokenClaims)
 	if !ok {
-		return fmt.Errorf("error get user claims from token")
+		return -1, fmt.Errorf("error get user claims from token")
 	}
 
-	return nil
+	return claims.ID, nil
+}
+
+func (s *UserService) GetUser(id int64) (*entity.User, error) {
+	return s.repo.GetUser(id)
+}
+
+func (s *UserService) CreateWorkout(workout *entity.UserWorkout) (int64, error) {
+	return s.repo.CreateWorkout(workout)
 }
 
 func (s *UserService) getPasswordHash(password string) string {

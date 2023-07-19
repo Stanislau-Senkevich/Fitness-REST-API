@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"Fitness_REST_API/internal/entity"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -13,10 +14,10 @@ func NewTrainerRepository(db *sqlx.DB) *TrainerRepository {
 	return &TrainerRepository{db: db}
 }
 
-func (r *TrainerRepository) Authorize(login, passwordHash string) error {
+func (r *TrainerRepository) Authorize(login, passwordHash string) (int64, error) {
 	var trainer entity.Trainer
 
-	query := "SELECT * FROM trainers WHERE login = $1 AND password_hash = $2"
+	query := fmt.Sprintf("SELECT * FROM %s WHERE login = $1 AND password_hash = $2", trainerTable)
 	err := r.db.Get(&trainer, query, login, passwordHash)
-	return err
+	return trainer.Id, err
 }
