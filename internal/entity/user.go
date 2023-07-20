@@ -1,5 +1,10 @@
 package entity
 
+const (
+	UserRole    = "user"
+	TrainerRole = "trainer"
+)
+
 type User struct {
 	Id           int64  `db:"id" json:"id"`
 	Email        string `db:"email" json:"email" binding:"required"`

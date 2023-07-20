@@ -134,23 +134,101 @@ func (h *Handler) deleteWorkout(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+	c.Status(http.StatusOK)
 }
 
 func (h *Handler) getAllTrainers(c *gin.Context) {
-
+	trainers, err := h.services.GetAllTrainers()
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, trainers)
 }
 
 func (h *Handler) getTrainerByID(c *gin.Context) {
+	trainerId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid type of id param"))
+		return
+	}
+	trainer, err := h.services.GetTrainerById(trainerId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("no trainer was found on provided id"))
+		return
+	}
+	c.JSON(http.StatusOK, trainer)
+}
 
+func (h *Handler) getPartnerships(c *gin.Context) {
+	userId, err := h.getId(c, userCtx)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	partnerships, err := h.services.GetUserPartnerships(userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, partnerships)
 }
 
 func (h *Handler) sendRequestToTrainer(c *gin.Context) {
+	trainerId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid type of id param"))
+		return
+	}
+	userId, err := h.getId(c, userCtx)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
 
+	PShipId, err := h.services.SendRequestToTrainer(trainerId, userId)
+	if err != nil {
+		if PShipId == -1 {
+			newErrorResponse(c, http.StatusBadRequest, err)
+			return
+		} else {
+			newErrorResponse(c, http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"id": PShipId,
+	})
 }
 
-func (h *Handler) deletePartnershipWithTrainer(c *gin.Context) {
+func (h *Handler) endPartnershipWithTrainer(c *gin.Context) {
+	trainerId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid type of id param"))
+		return
+	}
+	userId, err := h.getId(c, userCtx)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
 
+	PShipId, err := h.services.EndPartnershipWithTrainer(trainerId, userId)
+	if err != nil {
+		if PShipId == -1 {
+			newErrorResponse(c, http.StatusBadRequest, err)
+			return
+		} else {
+			newErrorResponse(c, http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"id": PShipId,
+	})
 }
 
 func (h *Handler) getId(c *gin.Context, key string) (int64, error) {

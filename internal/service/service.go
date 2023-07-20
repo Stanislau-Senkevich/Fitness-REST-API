@@ -26,6 +26,11 @@ type User interface {
 	GetAllUserWorkouts(id int64) ([]*entity.Workout, error)
 	GetWorkoutById(workoutId, userId int64) (*entity.Workout, error)
 	DeleteWorkout(workoutId, userId int64) error
+	GetAllTrainers() ([]*entity.User, error)
+	GetTrainerById(id int64) (*entity.User, error)
+	SendRequestToTrainer(trainerId, userId int64) (int64, error)
+	EndPartnershipWithTrainer(trainerId, userId int64) (int64, error)
+	GetUserPartnerships(userId int64) ([]*entity.Partnership, error)
 }
 
 type Services struct {

@@ -65,7 +65,7 @@ func (r *UserRepository) CreateWorkoutAsUser(workout *entity.Workout) (int64, er
 		}
 	}
 	if workout.TrainerId.Int64 != 0 {
-		ok := r.CheckPartnership(workout.UserId, workout.TrainerId.Int64)
+		ok := r.HasApprovedPartnership(workout.UserId, workout.TrainerId.Int64)
 		if !ok {
 			return -1, errors.New("no approved partnership was found")
 		}
@@ -88,10 +88,15 @@ func (r *UserRepository) CreateWorkoutAsUser(workout *entity.Workout) (int64, er
 	return id, tx.Commit()
 }
 
-func (r *UserRepository) CheckPartnership(userId, trainerId int64) bool {
+func (r *UserRepository) GetPartnership(trainerId, userId int64) (*entity.Partnership, error) {
 	var p entity.Partnership
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id = $1 AND trainer_id = $2", partnershipsTable)
 	err := r.db.Get(&p, query, userId, trainerId)
+	return &p, err
+}
+
+func (r *UserRepository) HasApprovedPartnership(trainerId, userId int64) bool {
+	p, err := r.GetPartnership(trainerId, userId)
 	if err != nil {
 		return false
 	}
@@ -115,6 +120,16 @@ func (r *UserRepository) CheckAccessToWorkout(workoutId, userId int64) error {
 		return errors.New("no access to this workout")
 	}
 	return nil
+}
+
+func (r *UserRepository) IsTrainer(userId int64) bool {
+	var user entity.User
+	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", userTable)
+	err := r.db.Get(&user, query, userId)
+	if err != nil {
+		return false
+	}
+	return user.Role == entity.TrainerRole
 }
 
 func (r *UserRepository) UpdateWorkout(workoutId, userId int64, update *entity.UpdateWorkout) error {
@@ -172,4 +187,79 @@ func (r *UserRepository) DeleteWorkout(workoutId, userId int64) error {
 	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1", workoutsTable)
 	_, err = r.db.Exec(query, workoutId)
 	return err
+}
+
+func (r *UserRepository) GetAllTrainers() ([]*entity.User, error) {
+	var trainers []*entity.User
+	query := fmt.Sprintf("SELECT * FROM %s WHERE role = 'trainer'", userTable)
+	err := r.db.Select(&trainers, query)
+	return trainers, err
+}
+
+func (r *UserRepository) GetTrainerById(id int64) (*entity.User, error) {
+	var trainer entity.User
+	query := fmt.Sprintf("SELECT * FROM %s WHERE role = 'trainer' AND id = $1", userTable)
+	err := r.db.Get(&trainer, query, id)
+	return &trainer, err
+}
+
+func (r *UserRepository) SendRequestToTrainer(trainerId, userId int64) (int64, error) {
+	if !r.IsTrainer(trainerId) {
+		return -1, errors.New("can't send request not to trainer")
+	}
+
+	p, _ := r.GetPartnership(trainerId, userId)
+
+	if p.Status == entity.StatusApproved {
+		return -1, errors.New("there is already approved partnership with trainer")
+	}
+
+	if p.Status == entity.StatusRequest {
+		return p.Id, nil
+	}
+
+	if p.Status == "" {
+		var id int64
+		status := "'" + entity.StatusRequest + "'"
+		query := fmt.Sprintf("INSERT INTO %s (trainer_id, user_id, status) values ($1, $2, %s) RETURNING id", partnershipsTable, status)
+		row := r.db.QueryRow(query, trainerId, userId)
+		err := row.Scan(&id)
+		return id, err
+	}
+
+	if p.Status == entity.StatusEnded {
+		status := "'" + entity.StatusRequest + "'"
+		query := fmt.Sprintf("UPDATE %s SET status = %s WHERE id = $1", partnershipsTable, status)
+		_, err := r.db.Exec(query, p.Id)
+		if err != nil {
+			return 0, err
+		}
+		return p.Id, nil
+	}
+	return 0, errors.New("undefined partnership on provided id")
+}
+
+func (r *UserRepository) EndPartnershipWithTrainer(trainerId, userId int64) (int64, error) {
+	if !r.HasApprovedPartnership(trainerId, userId) {
+		return -1, errors.New("no approved partnership to end")
+	}
+
+	p, err := r.GetPartnership(trainerId, userId)
+	if err != nil {
+		return 0, err
+	}
+	status := "'" + entity.StatusEnded + "'"
+	query := fmt.Sprintf("UPDATE %s SET status = %s, ended_at = NOW() WHERE id = $1", partnershipsTable, status)
+	_, err = r.db.Exec(query, p.Id)
+	if err != nil {
+		return 0, err
+	}
+	return p.Id, nil
+}
+
+func (r *UserRepository) GetUserPartnerships(userId int64) ([]*entity.Partnership, error) {
+	var partnerships []*entity.Partnership
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id = $1", partnershipsTable)
+	err := r.db.Select(&partnerships, query, userId)
+	return partnerships, err
 }

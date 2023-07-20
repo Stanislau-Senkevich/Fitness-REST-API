@@ -86,6 +86,26 @@ func (s *UserService) DeleteWorkout(workoutId, userId int64) error {
 	return s.repo.DeleteWorkout(workoutId, userId)
 }
 
+func (s *UserService) GetAllTrainers() ([]*entity.User, error) {
+	return s.repo.GetAllTrainers()
+}
+
+func (s *UserService) GetTrainerById(id int64) (*entity.User, error) {
+	return s.repo.GetTrainerById(id)
+}
+
+func (s *UserService) SendRequestToTrainer(trainerId, userId int64) (int64, error) {
+	return s.repo.SendRequestToTrainer(trainerId, userId)
+}
+
+func (s *UserService) EndPartnershipWithTrainer(trainerId, userId int64) (int64, error) {
+	return s.repo.EndPartnershipWithTrainer(trainerId, userId)
+}
+
+func (s *UserService) GetUserPartnerships(userId int64) ([]*entity.Partnership, error) {
+	return s.repo.GetUserPartnerships(userId)
+}
+
 func (s *UserService) getPasswordHash(password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(s.hashSalt))
