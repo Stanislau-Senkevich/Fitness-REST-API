@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"Fitness_REST_API/internal/entity"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -27,10 +28,6 @@ func validHeader(c *gin.Context) (string, bool) {
 		return "", false
 	}
 
-	if parts[1] == "" {
-		newErrorResponse(c, http.StatusUnauthorized, errors.New("empty token"))
-		return "", false
-	}
 	return parts[1], true
 }
 
@@ -45,6 +42,7 @@ func (h *Handler) adminIdentity(c *gin.Context) {
 		newErrorResponse(c, http.StatusUnauthorized, err)
 		return
 	}
+	c.String(http.StatusOK, "ok")
 }
 
 func (h *Handler) trainerIdentity(c *gin.Context) {
@@ -60,12 +58,12 @@ func (h *Handler) trainerIdentity(c *gin.Context) {
 		return
 	}
 
-	if role != "trainer" {
+	if role != entity.TrainerRole {
 		newErrorResponse(c, http.StatusForbidden, errors.New("forbidden"))
 		return
 	}
 
-	c.Set(userCtx, id)
+	c.Set(userIdCtx, id)
 }
 
 func (h *Handler) userIdentity(c *gin.Context) {
@@ -81,5 +79,5 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		return
 	}
 
-	c.Set(userCtx, id)
+	c.Set(userIdCtx, id)
 }

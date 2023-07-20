@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	userCtx = "userId"
+	userIdCtx = "userId"
 )
 
 func (h *Handler) getUserInfo(c *gin.Context) {
-	id, err := h.getId(c, userCtx)
+	id, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -29,7 +29,7 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 }
 
 func (h *Handler) createWorkout(c *gin.Context) {
-	id, err := h.getId(c, userCtx)
+	id, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -62,7 +62,7 @@ func (h *Handler) createWorkout(c *gin.Context) {
 }
 
 func (h *Handler) getUserWorkouts(c *gin.Context) {
-	id, err := h.getId(c, userCtx)
+	id, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -76,7 +76,7 @@ func (h *Handler) getUserWorkouts(c *gin.Context) {
 }
 
 func (h *Handler) getWorkoutByID(c *gin.Context) {
-	userId, err := h.getId(c, userCtx)
+	userId, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -98,7 +98,7 @@ func (h *Handler) updateWorkout(c *gin.Context) {
 		return
 	}
 
-	userId, err := h.getId(c, userCtx)
+	userId, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -122,7 +122,7 @@ func (h *Handler) updateWorkout(c *gin.Context) {
 }
 
 func (h *Handler) deleteWorkout(c *gin.Context) {
-	userId, err := h.getId(c, userCtx)
+	userId, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -161,7 +161,7 @@ func (h *Handler) getTrainerByID(c *gin.Context) {
 }
 
 func (h *Handler) getPartnerships(c *gin.Context) {
-	userId, err := h.getId(c, userCtx)
+	userId, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -181,7 +181,7 @@ func (h *Handler) sendRequestToTrainer(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid type of id param"))
 		return
 	}
-	userId, err := h.getId(c, userCtx)
+	userId, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -209,7 +209,7 @@ func (h *Handler) endPartnershipWithTrainer(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid type of id param"))
 		return
 	}
-	userId, err := h.getId(c, userCtx)
+	userId, err := h.getId(c, userIdCtx)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -232,7 +232,7 @@ func (h *Handler) endPartnershipWithTrainer(c *gin.Context) {
 }
 
 func (h *Handler) getId(c *gin.Context, key string) (int64, error) {
-	id, ok := c.Get(userCtx)
+	id, ok := c.Get(userIdCtx)
 	if !ok {
 		err := fmt.Errorf("user was not found")
 		return -1, err

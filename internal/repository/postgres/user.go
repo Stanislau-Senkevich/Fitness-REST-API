@@ -26,12 +26,23 @@ func (r *UserRepository) Authorize(email, passwordHash, role string) (int64, err
 
 func (r *UserRepository) CreateUser(user *entity.User) (int64, error) {
 	var id int64
+	if r.HasEmail(user.Email) {
+		return -1, errors.New("email has already reserved")
+	}
+
 	query := fmt.Sprintf("INSERT INTO %s (email, password_hash, name, surname) values ($1, $2, $4, $5) RETURNING id", userTable)
 	row := r.db.QueryRow(query, user.Email, user.PasswordHash, user.Name, user.Surname)
 	if err := row.Scan(&id); err != nil {
 		return 0, err
 	}
 	return id, nil
+}
+
+func (r *UserRepository) HasEmail(email string) bool {
+	var user entity.User
+	query := fmt.Sprintf("SELECT * FROM %s WHERE email = $1", userTable)
+	err := r.db.Get(&user, query, email)
+	return err != nil
 }
 
 func (r *UserRepository) GetUser(id int64) (*entity.User, error) {

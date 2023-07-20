@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
+
 const (
 	tokenTTL = 150000 * 60 * time.Second
 )

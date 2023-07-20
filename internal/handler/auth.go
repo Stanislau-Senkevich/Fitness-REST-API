@@ -34,8 +34,13 @@ func (h *Handler) signUp(c *gin.Context) {
 
 	id, err := h.services.User.SignUp(&inputUser)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err)
-		return
+		if id == -1 {
+			newErrorResponse(c, http.StatusBadRequest, err)
+			return
+		} else {
+			newErrorResponse(c, http.StatusInternalServerError, err)
+			return
+		}
 	}
 	c.JSON(http.StatusOK, signUpResponse{
 		Id: id,
@@ -49,7 +54,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.services.User.SignIn(input.Email, input.Password, "user")
+	token, err := h.services.User.SignIn(input.Email, input.Password, entity.UserRole)
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)
 		return
@@ -85,7 +90,7 @@ func (h *Handler) trainerSignIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.services.User.SignIn(input.Email, input.Password, "trainer")
+	token, err := h.services.User.SignIn(input.Email, input.Password, entity.TrainerRole)
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err)
 		return
