@@ -41,8 +41,8 @@ func (r *UserRepository) CreateUser(user *entity.User) (int64, error) {
 func (r *UserRepository) HasEmail(email string) bool {
 	var user entity.User
 	query := fmt.Sprintf("SELECT * FROM %s WHERE email = $1", userTable)
-	err := r.db.Get(&user, query, email)
-	return err != nil
+	_ = r.db.Get(&user, query, email)
+	return user.Id > 0
 }
 
 func (r *UserRepository) GetUser(id int64) (*entity.User, error) {
@@ -54,6 +54,10 @@ func (r *UserRepository) GetUser(id int64) (*entity.User, error) {
 
 func (r *UserRepository) CreateWorkoutAsUser(workout *entity.Workout) (int64, error) {
 
+	if workout.TrainerId.Int64 > 0 && !r.IsTrainer(workout.TrainerId.Int64) {
+		return -1, errors.New("can't set common user as a trainer")
+	}
+
 	tx, err := r.db.Begin()
 	if err != nil {
 		return -1, err
@@ -61,41 +65,12 @@ func (r *UserRepository) CreateWorkoutAsUser(workout *entity.Workout) (int64, er
 
 	var id int64
 
-	addQuery := fmt.Sprintf("INSERT INTO %s (title, user_id) values ($1, $2) RETURNING id", workoutsTable)
-	row := tx.QueryRow(addQuery, workout.Title, workout.UserId)
+	addQuery := fmt.Sprintf("INSERT INTO %s (title, user_id, trainer_id, description, date) values ($1, $2, $3, $4, $5) RETURNING id", workoutsTable)
+	row := tx.QueryRow(addQuery, workout.Title, workout.UserId, workout.TrainerId, workout.Description, workout.Date)
 	if err = row.Scan(&id); err != nil {
 		_ = tx.Rollback()
 		return -1, err
 	}
-	if !workout.Date.IsZero() {
-		dateQuery := fmt.Sprintf("UPDATE %s SET date = $1 WHERE id = $2", workoutsTable)
-		_, err = tx.Exec(dateQuery, workout.Date, id)
-		if err != nil {
-			tx.Rollback()
-			return -1, err
-		}
-	}
-	if workout.TrainerId.Int64 != 0 {
-		ok := r.HasApprovedPartnership(workout.UserId, workout.TrainerId.Int64)
-		if !ok {
-			return -1, errors.New("no approved partnership was found")
-		}
-		trainerQuery := fmt.Sprintf("UPDATE %s SET trainer_id = $1 WHERE id = $2", workoutsTable)
-		_, err = tx.Exec(trainerQuery, workout.TrainerId, id)
-		if err != nil {
-			tx.Rollback()
-			return -1, err
-		}
-	}
-	if workout.Description != "" {
-		descQuery := fmt.Sprintf("UPDATE %s SET description = $1 WHERE id = $2", workoutsTable)
-		_, err = tx.Exec(descQuery, workout.Description, id)
-		if err != nil {
-			tx.Rollback()
-			return -1, err
-		}
-	}
-
 	return id, tx.Commit()
 }
 
@@ -154,18 +129,12 @@ func (r *UserRepository) UpdateWorkout(workoutId, userId int64, update *entity.U
 	if err != nil {
 		return err
 	}
-	querySample := "UPDATE %s SET %s = $1 WHERE id = $2"
-	if update.Title != "" {
-		query := fmt.Sprintf(querySample, workoutsTable, "title")
-		_, err = tx.Exec(query, update.Title, workoutId)
-	}
-	if update.Description != "" {
-		query := fmt.Sprintf(querySample, workoutsTable, "description")
-		_, err = tx.Exec(query, update.Description, workoutId)
-	}
-	if !update.Date.IsZero() {
-		query := fmt.Sprintf(querySample, workoutsTable, "date")
-		_, err = tx.Exec(query, update.Date, workoutId)
+	querySample := "UPDATE %s SET %s = $1, %s = $2, %s = $3 WHERE id = $4"
+	query := fmt.Sprintf(querySample, workoutsTable, "title", "description", "date")
+	_, err = tx.Exec(query, update.Title, update.Description, update.Date, workoutId)
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
 	return tx.Commit()
 }
