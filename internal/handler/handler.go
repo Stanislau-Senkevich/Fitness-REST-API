@@ -87,7 +87,7 @@ func (h *Handler) initUserRoutes(router *gin.Engine) {
 		user.GET("/trainer", h.getAllTrainers)
 		user.GET("/trainer/:id", h.getTrainerByID)
 
-		user.GET("/partnership/", h.getPartnerships)
+		user.GET("/partnership", h.getPartnerships)
 		user.POST("/partnership/trainer/:id", h.sendRequestToTrainer)
 		user.PUT("/partnership/trainer/:id", h.endPartnershipWithTrainer)
 	}

@@ -14,7 +14,7 @@ const (
 )
 
 func (h *Handler) getUserInfo(c *gin.Context) {
-	id, err := h.getId(c, userIdCtx)
+	id, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -25,11 +25,12 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
+	user.PasswordHash = "hidden"
 	c.JSON(http.StatusOK, user)
 }
 
 func (h *Handler) createWorkout(c *gin.Context) {
-	id, err := h.getId(c, userIdCtx)
+	id, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -62,26 +63,30 @@ func (h *Handler) createWorkout(c *gin.Context) {
 }
 
 func (h *Handler) getUserWorkouts(c *gin.Context) {
-	id, err := h.getId(c, userIdCtx)
+	id, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 	w, err := h.services.User.GetAllUserWorkouts(id)
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err)
+		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, w)
 }
 
 func (h *Handler) getWorkoutByID(c *gin.Context) {
-	userId, err := h.getId(c, userIdCtx)
+	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || workoutId < 1 {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		return
+	}
 
 	workout, err := h.services.User.GetWorkoutById(workoutId, userId)
 	if err != nil {
@@ -98,7 +103,7 @@ func (h *Handler) updateWorkout(c *gin.Context) {
 		return
 	}
 
-	userId, err := h.getId(c, userIdCtx)
+	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -122,7 +127,7 @@ func (h *Handler) updateWorkout(c *gin.Context) {
 }
 
 func (h *Handler) deleteWorkout(c *gin.Context) {
-	userId, err := h.getId(c, userIdCtx)
+	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -148,8 +153,8 @@ func (h *Handler) getAllTrainers(c *gin.Context) {
 
 func (h *Handler) getTrainerByID(c *gin.Context) {
 	trainerId, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid type of id param"))
+	if err != nil || trainerId < 1 {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
 		return
 	}
 	trainer, err := h.services.GetTrainerById(trainerId)
@@ -161,7 +166,7 @@ func (h *Handler) getTrainerByID(c *gin.Context) {
 }
 
 func (h *Handler) getPartnerships(c *gin.Context) {
-	userId, err := h.getId(c, userIdCtx)
+	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -177,11 +182,11 @@ func (h *Handler) getPartnerships(c *gin.Context) {
 
 func (h *Handler) sendRequestToTrainer(c *gin.Context) {
 	trainerId, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid type of id param"))
+	if err != nil || trainerId < 1 {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
 		return
 	}
-	userId, err := h.getId(c, userIdCtx)
+	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -205,11 +210,11 @@ func (h *Handler) sendRequestToTrainer(c *gin.Context) {
 
 func (h *Handler) endPartnershipWithTrainer(c *gin.Context) {
 	trainerId, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid type of id param"))
+	if err != nil || trainerId < 1 {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
 		return
 	}
-	userId, err := h.getId(c, userIdCtx)
+	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -231,16 +236,21 @@ func (h *Handler) endPartnershipWithTrainer(c *gin.Context) {
 	})
 }
 
-func (h *Handler) getId(c *gin.Context, key string) (int64, error) {
+func (h *Handler) getId(c *gin.Context) (int64, error) {
 	id, ok := c.Get(userIdCtx)
 	if !ok {
-		err := fmt.Errorf("user was not found")
-		return -1, err
+		id = c.Request.Context().Value(userIdCtx)
+		idInt, ok := id.(int64)
+		if !ok || idInt < 1 {
+			err := fmt.Errorf("invalid id")
+			return -1, err
+		}
+		return idInt, nil
 	}
 
 	idInt, ok := id.(int64)
-	if !ok {
-		err := fmt.Errorf("invalid id type")
+	if !ok || idInt < 1 {
+		err := fmt.Errorf("invalid id")
 		return -1, err
 	}
 	return idInt, nil
