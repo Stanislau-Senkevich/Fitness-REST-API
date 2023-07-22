@@ -98,7 +98,7 @@ func (h *Handler) getWorkoutByID(c *gin.Context) {
 
 func (h *Handler) updateWorkout(c *gin.Context) {
 	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
+	if err != nil || workoutId < 1 {
 		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id parameter"))
 		return
 	}
@@ -109,13 +109,13 @@ func (h *Handler) updateWorkout(c *gin.Context) {
 		return
 	}
 
-	var input entity.UpdateWorkout
-	if err = c.ShouldBindJSON(&input); err != nil {
+	input, err := h.initUpdateWorkout(c, workoutId, userId)
+	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
 	}
 
-	err = h.services.User.UpdateWorkout(workoutId, userId, &input)
+	err = h.services.User.UpdateWorkout(workoutId, userId, input)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
@@ -254,4 +254,27 @@ func (h *Handler) getId(c *gin.Context) (int64, error) {
 		return -1, err
 	}
 	return idInt, nil
+}
+
+func (h *Handler) initUpdateWorkout(c *gin.Context, workoutId, userId int64) (*entity.UpdateWorkout, error) {
+	var input entity.UpdateWorkout
+	if err := c.ShouldBindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return nil, err
+	}
+
+	workout, err := h.services.GetWorkoutById(workoutId, userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return nil, err
+	}
+
+	if input.Title == "" {
+		input.Title = workout.Title
+	}
+
+	if input.Date.IsZero() {
+		input.Date = workout.Date
+	}
+	return &input, nil
 }

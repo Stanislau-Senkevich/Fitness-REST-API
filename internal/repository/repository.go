@@ -26,7 +26,6 @@ type User interface {
 	Authorize(email, passwordHash, role string) (int64, error)
 	CreateUser(user *entity.User) (int64, error)
 	GetUser(id int64) (*entity.User, error)
-	HasApprovedPartnership(trainerId, userId int64) bool
 
 	CreateWorkoutAsUser(*entity.Workout) (int64, error)
 	UpdateWorkout(workoutId, userId int64, update *entity.UpdateWorkout) error

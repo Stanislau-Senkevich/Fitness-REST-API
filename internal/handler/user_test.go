@@ -351,6 +351,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 			inputBody:     `{"title":"newTitle", "description":"newDesc"}`,
 			updateWorkout: entity.UpdateWorkout{Title: "newTitle", Description: "newDesc"},
 			mockBehaviour: func(r *mock_service.MockUser, workoutId, userId int64, input entity.UpdateWorkout) {
+				r.EXPECT().GetWorkoutById(workoutId, userId).Return(&entity.Workout{Id: workoutId, UserId: userId}, nil)
 				r.EXPECT().UpdateWorkout(workoutId, userId, &input).Return(nil)
 			},
 			expectedStatusCode:   200,
@@ -367,16 +368,14 @@ func TestHandler_updateWorkout(t *testing.T) {
 			expectedResponseBody: `{"error":"invalid id"}`,
 		},
 		{
-			name:          "Invalid workoutId",
-			userId:        1,
-			workoutId:     -1,
-			inputBody:     `{"title":"newTitle", "description":"newDesc"}`,
-			updateWorkout: entity.UpdateWorkout{Title: "newTitle", Description: "newDesc"},
-			mockBehaviour: func(r *mock_service.MockUser, workoutId, userId int64, input entity.UpdateWorkout) {
-				r.EXPECT().UpdateWorkout(workoutId, userId, &input).Return(errors.New("invalid workoutId"))
-			},
+			name:                 "Invalid workoutId",
+			userId:               1,
+			workoutId:            -1,
+			inputBody:            `{"title":"newTitle", "description":"newDesc"}`,
+			updateWorkout:        entity.UpdateWorkout{Title: "newTitle", Description: "newDesc"},
+			mockBehaviour:        func(r *mock_service.MockUser, workoutId, userId int64, input entity.UpdateWorkout) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid workoutId"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:          "Empty workout",
@@ -385,6 +384,8 @@ func TestHandler_updateWorkout(t *testing.T) {
 			inputBody:     `{}`,
 			updateWorkout: entity.UpdateWorkout{},
 			mockBehaviour: func(r *mock_service.MockUser, workoutId, userId int64, input entity.UpdateWorkout) {
+				r.EXPECT().GetWorkoutById(workoutId, userId).
+					Return(&entity.Workout{Id: workoutId, UserId: userId}, nil)
 				r.EXPECT().UpdateWorkout(workoutId, userId, &input).Return(nil)
 			},
 			expectedStatusCode:   200,

@@ -72,6 +72,63 @@ func TestUserRepository_Authorize(t *testing.T) {
 
 }
 
+func TestUserRepository_IsTrainer(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		mockBehaviour mockBehaviour
+		shouldReturn  bool
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rows := sqlmock.NewRows([]string{"id", "role"}).AddRow(userId, entity.TrainerRole)
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rows)
+			},
+			shouldReturn: true,
+		},
+		{
+			name:   "Not a trainer",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rows := sqlmock.NewRows([]string{"id", "role"}).AddRow(userId, entity.UserRole)
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rows)
+			},
+			shouldReturn: false,
+		},
+		{
+			name:   "No user was found",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldReturn: false,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.userId)
+
+			r := NewUserRepository(db)
+			got := r.IsTrainer(test.userId)
+
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
 func TestUserRepository_CreateUser(t *testing.T) {
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
@@ -194,6 +251,63 @@ func TestUserRepository_HasEmail(t *testing.T) {
 	}
 }
 
+func TestUserRepository_GetUser(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  *entity.User
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rows := sqlmock.NewRows([]string{"id"}).AddRow(userId)
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rows)
+			},
+			shouldFail: false,
+			shouldReturn: &entity.User{
+				Id: 1,
+			},
+		},
+		{
+			name:   "No user was found",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldFail:   true,
+			shouldReturn: &entity.User{},
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			r := NewUserRepository(db)
+			test.mockBehaviour(test.userId)
+
+			got, err := r.GetUser(test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+				assert.Equal(t, got, test.shouldReturn)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, got, test.shouldReturn)
+			}
+		})
+	}
+}
+
 func TestUserRepository_CreateWorkoutAsUser(t *testing.T) {
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
@@ -217,7 +331,7 @@ func TestUserRepository_CreateWorkoutAsUser(t *testing.T) {
 				Title:       "test",
 				Description: "test",
 				UserId:      1,
-				TrainerId:   sql.NullInt64{2, true},
+				TrainerId:   sql.NullInt64{Int64: 2, Valid: true},
 				Date:        time.Now(),
 			},
 			mockBehaviour: func(workout *entity.Workout) {
@@ -240,7 +354,7 @@ func TestUserRepository_CreateWorkoutAsUser(t *testing.T) {
 				Title:       "",
 				Description: "test",
 				UserId:      1,
-				TrainerId:   sql.NullInt64{2, true},
+				TrainerId:   sql.NullInt64{Int64: 2, Valid: true},
 				Date:        time.Now(),
 			},
 			mockBehaviour: func(workout *entity.Workout) {
@@ -262,7 +376,7 @@ func TestUserRepository_CreateWorkoutAsUser(t *testing.T) {
 				Title:       "",
 				Description: "test",
 				UserId:      1,
-				TrainerId:   sql.NullInt64{2, true},
+				TrainerId:   sql.NullInt64{Int64: 2, Valid: true},
 				Date:        time.Now(),
 			},
 			mockBehaviour: func(workout *entity.Workout) {
@@ -279,7 +393,7 @@ func TestUserRepository_CreateWorkoutAsUser(t *testing.T) {
 				Title:       "",
 				Description: "test",
 				UserId:      1,
-				TrainerId:   sql.NullInt64{2, true},
+				TrainerId:   sql.NullInt64{Int64: 2, Valid: true},
 				Date:        time.Now(),
 			},
 			mockBehaviour: func(workout *entity.Workout) {
@@ -290,16 +404,917 @@ func TestUserRepository_CreateWorkoutAsUser(t *testing.T) {
 		},
 	}
 	for _, test := range table {
-		r := NewUserRepository(db)
-		test.mockBehaviour(&test.workout)
+		t.Run(test.name, func(t *testing.T) {
+			r := NewUserRepository(db)
+			test.mockBehaviour(&test.workout)
 
-		got, err := r.CreateWorkoutAsUser(&test.workout)
-		if test.shouldFail {
-			assert.Error(t, err)
-			assert.Equal(t, got, test.shouldReturn)
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, got, test.shouldReturn)
-		}
+			got, err := r.CreateWorkoutAsUser(&test.workout)
+			if test.shouldFail {
+				assert.Error(t, err)
+				assert.Equal(t, got, test.shouldReturn)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, got, test.shouldReturn)
+			}
+		})
 	}
+}
+
+func TestUserRepository_CheckAccessToWorkout(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(workoutId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		workoutId     int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+	}{
+		{
+			name:      "Ok",
+			userId:    1,
+			workoutId: 1,
+			mockBehaviour: func(workoutId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(0), int64(1))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+			},
+			shouldFail: false,
+		},
+		{
+			name:      "No workout",
+			userId:    1,
+			workoutId: 1,
+			mockBehaviour: func(workoutId int64) {
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldFail: true,
+		},
+		{
+			name:      "Access as trainer",
+			userId:    1,
+			workoutId: 1,
+			mockBehaviour: func(workoutId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(1), int64(100))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+			},
+			shouldFail: false,
+		},
+		{
+			name:      "Access as client",
+			userId:    10,
+			workoutId: 1,
+			mockBehaviour: func(workoutId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(120), int64(10))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+			},
+			shouldFail: false,
+		},
+		{
+			name:      "No access",
+			userId:    1,
+			workoutId: 1,
+			mockBehaviour: func(workoutId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(120), int64(10))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+			},
+			shouldFail: true,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.workoutId)
+
+			r := NewUserRepository(db)
+			err = r.CheckAccessToWorkout(test.workoutId, test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestUserRepository_GetAllUserWorkouts(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  []*entity.Workout
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rows := sqlmock.NewRows([]string{"id", "trainer_id", "user_id", "title", "description", "date"}).
+					AddRow(int64(1), int64(2), int64(1), "test", "test", time.Unix(5, 0))
+				mock.ExpectQuery("SELECT (.+) FROM workouts").WithArgs(userId).WillReturnRows(rows)
+			},
+			shouldFail: false,
+			shouldReturn: []*entity.Workout{{
+				Id:          1,
+				TrainerId:   sql.NullInt64{2, true},
+				UserId:      1,
+				Title:       "test",
+				Description: "test",
+				Date:        time.Unix(5, 0),
+			}},
+		},
+		{
+			name:   "No workouts",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rows := sqlmock.NewRows([]string{"id", "trainer_id", "user_id", "title", "description", "date"})
+				mock.ExpectQuery("SELECT (.+) FROM workouts").WithArgs(userId).WillReturnRows(rows)
+			},
+			shouldFail:   false,
+			shouldReturn: []*entity.Workout{},
+		},
+		{
+			name:   "Internal error",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(userId).WillReturnError(errors.New("internal error"))
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.userId)
+
+			r := NewUserRepository(db)
+
+			got, err := r.GetAllUserWorkouts(test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_GetWorkoutById(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(workoutId, userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		workoutId     int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  *entity.Workout
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			mockBehaviour: func(workoutId, userId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(0), int64(1))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+				rows = sqlmock.NewRows([]string{"id", "trainer_id", "user_id", "title", "description", "date"}).
+					AddRow(int64(1), int64(2), int64(1), "test", "test", time.Unix(5, 0))
+				mock.ExpectQuery("SELECT (.+) FROM workouts").WithArgs(workoutId).WillReturnRows(rows)
+			},
+			shouldFail: false,
+			shouldReturn: &entity.Workout{
+				Id:          1,
+				TrainerId:   sql.NullInt64{2, true},
+				UserId:      1,
+				Title:       "test",
+				Description: "test",
+				Date:        time.Unix(5, 0),
+			},
+		},
+		{
+			name:   "No access",
+			userId: 1,
+			mockBehaviour: func(workoutId, userId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(100), int64(10))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+		{
+			name:   "No workout",
+			userId: 1,
+			mockBehaviour: func(workoutId, userId int64) {
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+		{
+			name:   "Internal error",
+			userId: 1,
+			mockBehaviour: func(workoutId, userId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(0), int64(1))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(workoutId).WillReturnError(errors.New("internal error"))
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.workoutId, test.userId)
+
+			r := NewUserRepository(db)
+
+			got, err := r.GetWorkoutById(test.workoutId, test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_UpdateWorkout(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(workoutId, userId int64, update *entity.UpdateWorkout)
+
+	table := []struct {
+		name          string
+		userId        int64
+		workoutId     int64
+		update        *entity.UpdateWorkout
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+	}{
+		{
+			name:      "Ok",
+			userId:    1,
+			workoutId: 1,
+			update:    &entity.UpdateWorkout{Title: "newTitle", Description: "newDesc", Date: time.Now()},
+			mockBehaviour: func(workoutId, userId int64, update *entity.UpdateWorkout) {
+				rowsSelect := sqlmock.NewRows([]string{"user_id", "trainer_id"}).AddRow(int64(1), int64(0))
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rowsSelect)
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE workouts SET (.+) WHERE (.+)").
+					WithArgs(update.Title, update.Description, update.Date, workoutId).WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectCommit()
+			},
+			shouldFail: false,
+		},
+		{
+			name:      "Empty fields",
+			userId:    1,
+			workoutId: 1,
+			update:    &entity.UpdateWorkout{},
+			mockBehaviour: func(workoutId, userId int64, update *entity.UpdateWorkout) {
+				rowsSelect := sqlmock.NewRows([]string{"user_id", "trainer_id"}).AddRow(int64(1), int64(0))
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rowsSelect)
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE workouts SET (.+) WHERE (.+)").
+					WithArgs(update.Title, update.Description, update.Date, workoutId).WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectCommit()
+			},
+			shouldFail: false,
+		},
+		{
+			name:      "Internal error",
+			userId:    1,
+			workoutId: 1,
+			update:    &entity.UpdateWorkout{},
+			mockBehaviour: func(workoutId, userId int64, update *entity.UpdateWorkout) {
+				rowsSelect := sqlmock.NewRows([]string{"user_id", "trainer_id"}).AddRow(int64(1), int64(0))
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rowsSelect)
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE workouts SET (.+) WHERE (.+)").
+					WithArgs(update.Title, update.Description, update.Date, workoutId).WillReturnError(errors.New("internal error"))
+				mock.ExpectRollback()
+			},
+			shouldFail: true,
+		},
+		{
+			name:      "No workout was found",
+			userId:    1,
+			workoutId: 1,
+			update:    &entity.UpdateWorkout{},
+			mockBehaviour: func(workoutId, userId int64, update *entity.UpdateWorkout) {
+				rowsSelect := sqlmock.NewRows([]string{"user_id", "trainer_id"})
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rowsSelect)
+			},
+			shouldFail: true,
+		},
+		{
+			name:      "No access to workout",
+			userId:    1,
+			workoutId: 1,
+			update:    &entity.UpdateWorkout{},
+			mockBehaviour: func(workoutId, userId int64, update *entity.UpdateWorkout) {
+				rowsSelect := sqlmock.NewRows([]string{"user_id", "trainer_id"}).AddRow(int64(100), int64(101))
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rowsSelect)
+			},
+			shouldFail: true,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.workoutId, test.userId, test.update)
+
+			r := NewUserRepository(db)
+			err = r.UpdateWorkout(test.workoutId, test.userId, test.update)
+
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+
+}
+
+func TestUserRepository_DeleteWorkout(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(workoutId, userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		workoutId     int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			mockBehaviour: func(workoutId, userId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(0), int64(1))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+				mock.ExpectExec("DELETE FROM workouts").
+					WithArgs(workoutId).WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			shouldFail: false,
+		},
+		{
+			name:   "No workout",
+			userId: 1,
+			mockBehaviour: func(workoutId, userId int64) {
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldFail: true,
+		},
+		{
+			name:   "Internal error",
+			userId: 1,
+			mockBehaviour: func(workoutId, userId int64) {
+				rows := sqlmock.NewRows([]string{"trainer_id", "user_id"}).AddRow(int64(0), int64(1))
+				mock.ExpectQuery("SELECT user_id, trainer_id FROM workouts").
+					WithArgs(workoutId).WillReturnRows(rows)
+				mock.ExpectExec("DELETE FROM workouts").
+					WithArgs(workoutId).WillReturnError(errors.New("internal error"))
+			},
+			shouldFail: true,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.workoutId, test.userId)
+
+			r := NewUserRepository(db)
+
+			err = r.DeleteWorkout(test.workoutId, test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestUserRepository_GetAllTrainers(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func()
+
+	table := []struct {
+		name          string
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  []*entity.User
+	}{
+		{
+			name: "Ok",
+			mockBehaviour: func() {
+				rows := sqlmock.NewRows([]string{"id", "email", "name", "surname"}).
+					AddRow(int64(1), "test1", "test1", "test1").
+					AddRow(int64(2), "test2", "test2", "test2")
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(entity.TrainerRole).WillReturnRows(rows)
+			},
+			shouldFail: false,
+			shouldReturn: []*entity.User{
+				{Id: 1, Email: "test1", Name: "test1", Surname: "test1"},
+				{Id: 2, Email: "test2", Name: "test2", Surname: "test2"},
+			},
+		},
+		{
+			name: "No trainers",
+			mockBehaviour: func() {
+				rows := sqlmock.NewRows([]string{"id", "email", "name", "surname"})
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(entity.TrainerRole).WillReturnRows(rows)
+			},
+			shouldFail:   false,
+			shouldReturn: []*entity.User{},
+		},
+		{
+			name: "Internal error",
+			mockBehaviour: func() {
+				mock.ExpectQuery("SELECT (.+) FROM users").WillReturnError(errors.New("internal error"))
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour()
+
+			r := NewUserRepository(db)
+			got, err := r.GetAllTrainers()
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_GetTrainerById(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(trainerId int64)
+
+	table := []struct {
+		name          string
+		trainerId     int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  *entity.User
+	}{
+		{
+			name:      "Ok",
+			trainerId: 1,
+			mockBehaviour: func(trainerId int64) {
+				rows := sqlmock.NewRows([]string{"id", "email", "name", "surname"}).
+					AddRow(trainerId, "test1", "test1", "test1")
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(trainerId).WillReturnRows(rows)
+			},
+			shouldFail: false,
+			shouldReturn: &entity.User{
+				Id: 1, Email: "test1", Name: "test1", Surname: "test1"},
+		},
+		{
+			name: "No trainer on id",
+			mockBehaviour: func(trainerId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(trainerId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+		{
+			name: "Internal error",
+			mockBehaviour: func(trainerId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM users").WillReturnError(errors.New("internal error"))
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.trainerId)
+
+			r := NewUserRepository(db)
+			got, err := r.GetTrainerById(test.trainerId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_GetUserPartnerships(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  []*entity.Partnership
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rows := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).
+					AddRow(int64(1), int64(1), int64(2), entity.StatusApproved).
+					AddRow(int64(2), int64(1), int64(3), entity.StatusRequest).
+					AddRow(int64(3), int64(1), int64(4), entity.StatusEnded)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(userId).WillReturnRows(rows)
+			},
+			shouldFail: false,
+			shouldReturn: []*entity.Partnership{
+				{Id: 1, UserId: 1, TrainerId: 2, Status: entity.StatusApproved},
+				{Id: 2, UserId: 1, TrainerId: 3, Status: entity.StatusRequest},
+				{Id: 3, UserId: 1, TrainerId: 4, Status: entity.StatusEnded},
+			},
+		},
+		{
+			name:   "No partnerships",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rows := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"})
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(userId).WillReturnRows(rows)
+			},
+			shouldFail:   false,
+			shouldReturn: []*entity.Partnership{},
+		},
+		{
+			name:   "Internal error",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(userId).WillReturnError(errors.New("internal error"))
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.userId)
+
+			r := NewUserRepository(db)
+			got, err := r.GetUserPartnerships(test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_GetPartnership(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(trainerId, userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		trainerId     int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  *entity.Partnership
+	}{
+		{
+			name:      "Ok",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				rows := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).AddRow(int64(1), int64(1), int64(2), entity.StatusApproved)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").WithArgs(trainerId, userId).WillReturnRows(rows)
+			},
+			shouldFail:   false,
+			shouldReturn: &entity.Partnership{Id: 1, UserId: 1, TrainerId: 2, Status: entity.StatusApproved},
+		},
+		{
+			name:      "No partnership",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").WithArgs(trainerId, userId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldFail:   true,
+			shouldReturn: &entity.Partnership{},
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			r := NewUserRepository(db)
+			test.mockBehaviour(test.trainerId, test.userId)
+
+			got, err := r.GetPartnership(test.trainerId, test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_SendRequestToTrainer(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(trainerId, userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		trainerId     int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  int64
+	}{
+		{
+			name:      "Ok Insert",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				trainerRow := sqlmock.NewRows([]string{"id", "role"}).
+					AddRow(trainerId, entity.TrainerRole)
+				idRow := sqlmock.NewRows([]string{"id"}).
+					AddRow(int64(1))
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(trainerId).WillReturnRows(trainerRow)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnError(errors.New("sql: no rows in result set"))
+				mock.ExpectQuery("INSERT INTO partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(idRow)
+			},
+			shouldFail:   false,
+			shouldReturn: 1,
+		},
+		{
+			name:      "Ok Update Ended",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				trainerRow := sqlmock.NewRows([]string{"id", "role"}).
+					AddRow(trainerId, entity.TrainerRole)
+				partnershipRow := sqlmock.NewRows([]string{"id", "trainer_id", "user_id", "status"}).
+					AddRow(int64(1), int64(2), int64(1), entity.StatusEnded)
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(trainerId).WillReturnRows(trainerRow)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(partnershipRow)
+				mock.ExpectExec("UPDATE partnerships SET (.+)").
+					WithArgs(userId).WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			shouldFail:   false,
+			shouldReturn: 1,
+		},
+		{
+			name:      "Ok Update Request",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				trainerRow := sqlmock.NewRows([]string{"id", "role"}).
+					AddRow(trainerId, entity.TrainerRole)
+				partnershipRow := sqlmock.NewRows([]string{"id", "trainer_id", "user_id", "status"}).
+					AddRow(int64(1), int64(2), int64(1), entity.StatusRequest)
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(trainerId).WillReturnRows(trainerRow)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(partnershipRow)
+			},
+			shouldFail:   false,
+			shouldReturn: 1,
+		},
+		{
+			name:      "Not a trainer",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(trainerId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldFail:   true,
+			shouldReturn: -1,
+		},
+		{
+			name:      "Already approved partnership",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				trainerRow := sqlmock.NewRows([]string{"id", "role"}).
+					AddRow(trainerId, entity.TrainerRole)
+				partnershipRow := sqlmock.NewRows([]string{"id", "trainer_id", "user_id", "status"}).
+					AddRow(int64(1), int64(2), int64(1), entity.StatusApproved)
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(trainerId).WillReturnRows(trainerRow)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(partnershipRow)
+			},
+			shouldFail:   true,
+			shouldReturn: -1,
+		},
+		{
+			name:      "Undefined status",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				trainerRow := sqlmock.NewRows([]string{"id", "role"}).
+					AddRow(trainerId, entity.TrainerRole)
+				partnershipRow := sqlmock.NewRows([]string{"id", "trainer_id", "user_id", "status"}).
+					AddRow(int64(1), int64(2), int64(1), "?????")
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(trainerId).WillReturnRows(trainerRow)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(partnershipRow)
+			},
+			shouldFail:   true,
+			shouldReturn: 0,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.trainerId, test.userId)
+
+			r := NewUserRepository(db)
+			got, err := r.SendRequestToTrainer(test.trainerId, test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_EndPartnershipWithTrainer(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(trainerId, userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		trainerId     int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  int64
+	}{
+		{
+			name:      "Ok",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				partnershipRow := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).
+					AddRow(int64(1), int64(1), int64(2), entity.StatusApproved)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(partnershipRow)
+				mock.ExpectExec("UPDATE partnerships SET (.+)").
+					WithArgs(int64(1)).WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			shouldFail:   false,
+			shouldReturn: 1,
+		},
+		{
+			name:      "No approved partnership",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				partnershipRow := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).
+					AddRow(int64(1), int64(1), int64(2), entity.StatusEnded)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(partnershipRow)
+			},
+			shouldFail:   true,
+			shouldReturn: -1,
+		},
+		{
+			name:      "No partnership",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnError(errors.New("sql: no rows in result set"))
+			},
+			shouldFail:   true,
+			shouldReturn: -1,
+		},
+		{
+			name:      "Internal error",
+			userId:    1,
+			trainerId: 2,
+			mockBehaviour: func(trainerId, userId int64) {
+				partnershipRow := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).
+					AddRow(int64(1), int64(1), int64(2), entity.StatusApproved)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(partnershipRow)
+				mock.ExpectExec("UPDATE partnerships SET (.+)").
+					WithArgs(int64(1)).WillReturnError(errors.New("internal error"))
+			},
+			shouldFail:   true,
+			shouldReturn: 0,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehaviour(test.trainerId, test.userId)
+
+			r := NewUserRepository(db)
+			got, err := r.EndPartnershipWithTrainer(test.trainerId, test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+
 }
