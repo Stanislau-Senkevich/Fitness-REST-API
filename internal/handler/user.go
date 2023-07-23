@@ -20,35 +20,25 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 		return
 	}
 
-	user, err := h.services.GetUser(id)
+	user, err := h.services.GetUserInfoById(id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
-	user.PasswordHash = "hidden"
 	c.JSON(http.StatusOK, user)
 }
 
 func (h *Handler) createWorkout(c *gin.Context) {
-	id, err := h.getId(c)
+	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 
 	var input entity.Workout
-
-	if err = c.ShouldBindJSON(&input); err != nil {
+	err = initUserWorkout(c, &input, userId)
+	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
-		return
-	}
-
-	if input.UserId == 0 {
-		input.UserId = id
-	}
-
-	if input.UserId != id {
-		newErrorResponse(c, http.StatusBadRequest, fmt.Errorf("user_id from token and user_id from workout must match"))
 		return
 	}
 
@@ -68,7 +58,7 @@ func (h *Handler) getUserWorkouts(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
-	w, err := h.services.User.GetAllUserWorkouts(id)
+	w, err := h.services.User.GetUserWorkouts(id)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -76,7 +66,7 @@ func (h *Handler) getUserWorkouts(c *gin.Context) {
 	c.JSON(http.StatusOK, w)
 }
 
-func (h *Handler) getWorkoutByID(c *gin.Context) {
+func (h *Handler) getWorkoutById(c *gin.Context) {
 	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
@@ -143,7 +133,7 @@ func (h *Handler) deleteWorkout(c *gin.Context) {
 }
 
 func (h *Handler) getAllTrainers(c *gin.Context) {
-	trainers, err := h.services.GetAllTrainers()
+	trainers, err := h.services.GetTrainers()
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -151,7 +141,7 @@ func (h *Handler) getAllTrainers(c *gin.Context) {
 	c.JSON(http.StatusOK, trainers)
 }
 
-func (h *Handler) getTrainerByID(c *gin.Context) {
+func (h *Handler) getTrainerById(c *gin.Context) {
 	trainerId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
@@ -192,9 +182,9 @@ func (h *Handler) sendRequestToTrainer(c *gin.Context) {
 		return
 	}
 
-	PShipId, err := h.services.SendRequestToTrainer(trainerId, userId)
+	pId, err := h.services.SendRequestToTrainer(trainerId, userId)
 	if err != nil {
-		if PShipId == -1 {
+		if pId == -1 {
 			newErrorResponse(c, http.StatusBadRequest, err)
 			return
 		} else {
@@ -204,7 +194,7 @@ func (h *Handler) sendRequestToTrainer(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"id": PShipId,
+		"request_id": pId,
 	})
 }
 
@@ -220,9 +210,9 @@ func (h *Handler) endPartnershipWithTrainer(c *gin.Context) {
 		return
 	}
 
-	PShipId, err := h.services.EndPartnershipWithTrainer(trainerId, userId)
+	pId, err := h.services.EndPartnershipWithTrainer(trainerId, userId)
 	if err != nil {
-		if PShipId == -1 {
+		if pId == -1 {
 			newErrorResponse(c, http.StatusBadRequest, err)
 			return
 		} else {
@@ -232,7 +222,7 @@ func (h *Handler) endPartnershipWithTrainer(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"id": PShipId,
+		"partnership_id": pId,
 	})
 }
 
@@ -277,4 +267,19 @@ func (h *Handler) initUpdateWorkout(c *gin.Context, workoutId, userId int64) (*e
 		input.Date = workout.Date
 	}
 	return &input, nil
+}
+
+func initUserWorkout(c *gin.Context, input *entity.Workout, userId int64) error {
+	if err := c.ShouldBindJSON(&input); err != nil {
+		return err
+	}
+
+	if input.UserId == 0 {
+		input.UserId = userId
+	}
+
+	if input.UserId != userId {
+		return errors.New("user_id from token and user_id from workout must match")
+	}
+	return nil
 }

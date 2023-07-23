@@ -296,7 +296,7 @@ func TestUserRepository_GetUser(t *testing.T) {
 			r := NewUserRepository(db)
 			test.mockBehaviour(test.userId)
 
-			got, err := r.GetUser(test.userId)
+			got, err := r.GetUserInfoById(test.userId)
 			if test.shouldFail {
 				assert.Error(t, err)
 				assert.Equal(t, got, test.shouldReturn)
@@ -567,7 +567,7 @@ func TestUserRepository_GetAllUserWorkouts(t *testing.T) {
 
 			r := NewUserRepository(db)
 
-			got, err := r.GetAllUserWorkouts(test.userId)
+			got, err := r.GetUserWorkouts(test.userId)
 			if test.shouldFail {
 				assert.Error(t, err)
 			} else {
@@ -895,7 +895,7 @@ func TestUserRepository_GetAllTrainers(t *testing.T) {
 			test.mockBehaviour()
 
 			r := NewUserRepository(db)
-			got, err := r.GetAllTrainers()
+			got, err := r.GetTrainers()
 			if test.shouldFail {
 				assert.Error(t, err)
 			} else {
@@ -992,7 +992,7 @@ func TestUserRepository_GetUserPartnerships(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).
 					AddRow(int64(1), int64(1), int64(2), entity.StatusApproved).
 					AddRow(int64(2), int64(1), int64(3), entity.StatusRequest).
-					AddRow(int64(3), int64(1), int64(4), entity.StatusEnded)
+					AddRow(int64(3), int64(1), int64(4), entity.StatusEndedByUser)
 				mock.ExpectQuery("SELECT (.+) FROM partnerships").
 					WithArgs(userId).WillReturnRows(rows)
 			},
@@ -1000,7 +1000,7 @@ func TestUserRepository_GetUserPartnerships(t *testing.T) {
 			shouldReturn: []*entity.Partnership{
 				{Id: 1, UserId: 1, TrainerId: 2, Status: entity.StatusApproved},
 				{Id: 2, UserId: 1, TrainerId: 3, Status: entity.StatusRequest},
-				{Id: 3, UserId: 1, TrainerId: 4, Status: entity.StatusEnded},
+				{Id: 3, UserId: 1, TrainerId: 4, Status: entity.StatusEndedByUser},
 			},
 		},
 		{
@@ -1140,7 +1140,7 @@ func TestUserRepository_SendRequestToTrainer(t *testing.T) {
 				trainerRow := sqlmock.NewRows([]string{"id", "role"}).
 					AddRow(trainerId, entity.TrainerRole)
 				partnershipRow := sqlmock.NewRows([]string{"id", "trainer_id", "user_id", "status"}).
-					AddRow(int64(1), int64(2), int64(1), entity.StatusEnded)
+					AddRow(int64(1), int64(2), int64(1), entity.StatusEndedByUser)
 				mock.ExpectQuery("SELECT (.+) FROM users").
 					WithArgs(trainerId).WillReturnRows(trainerRow)
 				mock.ExpectQuery("SELECT (.+) FROM partnerships").
@@ -1268,7 +1268,7 @@ func TestUserRepository_EndPartnershipWithTrainer(t *testing.T) {
 			trainerId: 2,
 			mockBehaviour: func(trainerId, userId int64) {
 				partnershipRow := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).
-					AddRow(int64(1), int64(1), int64(2), entity.StatusEnded)
+					AddRow(int64(1), int64(1), int64(2), entity.StatusEndedByUser)
 				mock.ExpectQuery("SELECT (.+) FROM partnerships").
 					WithArgs(trainerId, userId).WillReturnRows(partnershipRow)
 			},

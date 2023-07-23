@@ -44,7 +44,7 @@ func (h *Handler) initAdminRoutes(router *gin.Engine) {
 		admin.POST("/user", h.createUser)
 
 		admin.GET("/trainer", h.getAllTrainers)
-		admin.GET("/trainer/:id", h.getTrainerByID)
+		admin.GET("/trainer/:id", h.getTrainerById)
 		admin.PUT("/trainer/:id", h.updateTrainer)
 		admin.DELETE("/trainer/:id", h.deleteTrainer)
 		admin.POST("/trainer", h.createTrainer)
@@ -56,20 +56,20 @@ func (h *Handler) initTrainerRoutes(router *gin.Engine) {
 	{
 		trainer.GET("/user", h.getAllTrainerUsers)
 		trainer.GET("/user/:id", h.getTrainerUser)
-		trainer.POST("/user/:id", h.addUserToTrainerList)
-		trainer.DELETE("/user/:id", h.deleteUserFromTrainerList)
+		trainer.POST("/user/:id", h.initPartnershipWithUser)
+		trainer.PUT("/user/:id", h.endPartnershipWithUser)
 
 		trainer.GET("/request", h.getAllTrainerRequests)
 		trainer.GET("/request/:id", h.getTrainerRequest)
-		trainer.POST("/request/:id", h.acceptRequest)
+		trainer.PUT("/request/:id", h.acceptRequest)
 		trainer.DELETE("/request/:id", h.denyRequest)
 
 		trainer.POST("/workout", h.createTrainerWorkout)
 		trainer.GET("/workout", h.getTrainerWorkouts)
-		trainer.GET("/workout/:id", h.getTrainerWorkoutByID)
+		trainer.GET("/workout/:id", h.getWorkoutById)
 		trainer.GET("/workout/user/:id", h.getTrainerWorkoutsWithUser)
-		trainer.PUT("/workout/:id", h.updateTrainerWorkout)
-		trainer.DELETE("/workout/:id", h.deleteTrainerWorkout)
+		trainer.PUT("/workout/:id", h.updateWorkout)
+		trainer.DELETE("/workout/:id", h.deleteWorkout)
 	}
 }
 
@@ -79,13 +79,13 @@ func (h *Handler) initUserRoutes(router *gin.Engine) {
 		user.GET("/", h.getUserInfo)
 
 		user.GET("/workout", h.getUserWorkouts)
-		user.GET("/workout/:id", h.getWorkoutByID)
+		user.GET("/workout/:id", h.getWorkoutById)
 		user.POST("/workout", h.createWorkout)
 		user.PUT("/workout/:id", h.updateWorkout)
 		user.DELETE("/workout/:id", h.deleteWorkout)
 
 		user.GET("/trainer", h.getAllTrainers)
-		user.GET("/trainer/:id", h.getTrainerByID)
+		user.GET("/trainer/:id", h.getTrainerById)
 
 		user.GET("/partnership", h.getPartnerships)
 		user.POST("/partnership/trainer/:id", h.sendRequestToTrainer)

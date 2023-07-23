@@ -62,8 +62,8 @@ func (s *UserService) ParseToken(token string) (int64, string, error) {
 	return claims.ID, claims.Role, nil
 }
 
-func (s *UserService) GetUser(id int64) (*entity.User, error) {
-	return s.repo.GetUser(id)
+func (s *UserService) GetUserInfoById(id int64) (*entity.User, error) {
+	return s.repo.GetUserInfoById(id)
 }
 
 func (s *UserService) CreateWorkoutAsUser(workout *entity.Workout) (int64, error) {
@@ -74,8 +74,8 @@ func (s *UserService) UpdateWorkout(workoutId, userId int64, update *entity.Upda
 	return s.repo.UpdateWorkout(workoutId, userId, update)
 }
 
-func (s *UserService) GetAllUserWorkouts(id int64) ([]*entity.Workout, error) {
-	return s.repo.GetAllUserWorkouts(id)
+func (s *UserService) GetUserWorkouts(id int64) ([]*entity.Workout, error) {
+	return s.repo.GetUserWorkouts(id)
 }
 
 func (s *UserService) GetWorkoutById(workoutId, userId int64) (*entity.Workout, error) {
@@ -86,8 +86,8 @@ func (s *UserService) DeleteWorkout(workoutId, userId int64) error {
 	return s.repo.DeleteWorkout(workoutId, userId)
 }
 
-func (s *UserService) GetAllTrainers() ([]*entity.User, error) {
-	return s.repo.GetAllTrainers()
+func (s *UserService) GetTrainers() ([]*entity.User, error) {
+	return s.repo.GetTrainers()
 }
 
 func (s *UserService) GetTrainerById(id int64) (*entity.User, error) {
@@ -104,6 +104,50 @@ func (s *UserService) EndPartnershipWithTrainer(trainerId, userId int64) (int64,
 
 func (s *UserService) GetUserPartnerships(userId int64) ([]*entity.Partnership, error) {
 	return s.repo.GetUserPartnerships(userId)
+}
+
+func (s *UserService) GetTrainerUsers(trainerId int64) ([]*entity.User, error) {
+	return s.repo.GetTrainerUsers(trainerId)
+}
+
+func (s *UserService) GetTrainerRequests(trainerId int64) ([]*entity.Request, error) {
+	return s.repo.GetTrainerRequests(trainerId)
+}
+
+func (s *UserService) GetTrainerUserById(trainerId, userId int64) (*entity.User, error) {
+	return s.repo.GetTrainerUser(trainerId, userId)
+}
+
+func (s *UserService) GetTrainerRequestById(requestId int64) (*entity.Request, error) {
+	return s.repo.GetTrainerRequest(requestId)
+}
+
+func (s *UserService) InitPartnershipWithUser(trainerId, userId int64) (int64, error) {
+	return s.repo.InitPartnershipWithUser(trainerId, userId)
+}
+
+func (s *UserService) EndPartnershipWithUser(trainerId, userId int64) (int64, error) {
+	return s.repo.EndPartnershipWithUser(trainerId, userId)
+}
+
+func (s *UserService) AcceptRequest(trainerId, requestId int64) (int64, error) {
+	return s.repo.AcceptRequest(trainerId, requestId)
+}
+
+func (s *UserService) DenyRequest(trainerId, requestId int64) error {
+	return s.repo.DenyRequest(trainerId, requestId)
+}
+
+func (s *UserService) GetTrainerWorkouts(trainerId int64) ([]*entity.Workout, error) {
+	return s.repo.GetTrainerWorkouts(trainerId)
+}
+
+func (s *UserService) CreateWorkoutAsTrainer(workout *entity.Workout) (int64, error) {
+	return s.repo.CreateWorkoutAsTrainer(workout)
+}
+
+func (s *UserService) GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]*entity.Workout, error) {
+	return s.repo.GetTrainerWorkoutsWithUser(trainerId, userId)
 }
 
 func (s *UserService) getPasswordHash(password string) string {

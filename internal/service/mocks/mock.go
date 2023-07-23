@@ -86,6 +86,36 @@ func (m *MockUser) EXPECT() *MockUserMockRecorder {
 	return m.recorder
 }
 
+// AcceptRequest mocks base method.
+func (m *MockUser) AcceptRequest(trainerId, requestId int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AcceptRequest", trainerId, requestId)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AcceptRequest indicates an expected call of AcceptRequest.
+func (mr *MockUserMockRecorder) AcceptRequest(trainerId, requestId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptRequest", reflect.TypeOf((*MockUser)(nil).AcceptRequest), trainerId, requestId)
+}
+
+// CreateWorkoutAsTrainer mocks base method.
+func (m *MockUser) CreateWorkoutAsTrainer(workout *entity.Workout) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateWorkoutAsTrainer", workout)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateWorkoutAsTrainer indicates an expected call of CreateWorkoutAsTrainer.
+func (mr *MockUserMockRecorder) CreateWorkoutAsTrainer(workout interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkoutAsTrainer", reflect.TypeOf((*MockUser)(nil).CreateWorkoutAsTrainer), workout)
+}
+
 // CreateWorkoutAsUser mocks base method.
 func (m *MockUser) CreateWorkoutAsUser(workout *entity.Workout) (int64, error) {
 	m.ctrl.T.Helper()
@@ -115,6 +145,20 @@ func (mr *MockUserMockRecorder) DeleteWorkout(workoutId, userId interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWorkout", reflect.TypeOf((*MockUser)(nil).DeleteWorkout), workoutId, userId)
 }
 
+// DenyRequest mocks base method.
+func (m *MockUser) DenyRequest(trainerId, requestId int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DenyRequest", trainerId, requestId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DenyRequest indicates an expected call of DenyRequest.
+func (mr *MockUserMockRecorder) DenyRequest(trainerId, requestId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DenyRequest", reflect.TypeOf((*MockUser)(nil).DenyRequest), trainerId, requestId)
+}
+
 // EndPartnershipWithTrainer mocks base method.
 func (m *MockUser) EndPartnershipWithTrainer(trainerId, userId int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -130,34 +174,19 @@ func (mr *MockUserMockRecorder) EndPartnershipWithTrainer(trainerId, userId inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EndPartnershipWithTrainer", reflect.TypeOf((*MockUser)(nil).EndPartnershipWithTrainer), trainerId, userId)
 }
 
-// GetAllTrainers mocks base method.
-func (m *MockUser) GetAllTrainers() ([]*entity.User, error) {
+// EndPartnershipWithUser mocks base method.
+func (m *MockUser) EndPartnershipWithUser(trainerId, userId int64) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllTrainers")
-	ret0, _ := ret[0].([]*entity.User)
+	ret := m.ctrl.Call(m, "EndPartnershipWithUser", trainerId, userId)
+	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAllTrainers indicates an expected call of GetAllTrainers.
-func (mr *MockUserMockRecorder) GetAllTrainers() *gomock.Call {
+// EndPartnershipWithUser indicates an expected call of EndPartnershipWithUser.
+func (mr *MockUserMockRecorder) EndPartnershipWithUser(trainerId, userId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTrainers", reflect.TypeOf((*MockUser)(nil).GetAllTrainers))
-}
-
-// GetAllUserWorkouts mocks base method.
-func (m *MockUser) GetAllUserWorkouts(id int64) ([]*entity.Workout, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllUserWorkouts", id)
-	ret0, _ := ret[0].([]*entity.Workout)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllUserWorkouts indicates an expected call of GetAllUserWorkouts.
-func (mr *MockUserMockRecorder) GetAllUserWorkouts(id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUserWorkouts", reflect.TypeOf((*MockUser)(nil).GetAllUserWorkouts), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EndPartnershipWithUser", reflect.TypeOf((*MockUser)(nil).EndPartnershipWithUser), trainerId, userId)
 }
 
 // GetTrainerById mocks base method.
@@ -175,19 +204,124 @@ func (mr *MockUserMockRecorder) GetTrainerById(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerById", reflect.TypeOf((*MockUser)(nil).GetTrainerById), id)
 }
 
-// GetUser mocks base method.
-func (m *MockUser) GetUser(id int64) (*entity.User, error) {
+// GetTrainerRequestById mocks base method.
+func (m *MockUser) GetTrainerRequestById(requestId int64) (*entity.Request, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUser", id)
+	ret := m.ctrl.Call(m, "GetTrainerRequestById", requestId)
+	ret0, _ := ret[0].(*entity.Request)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTrainerRequestById indicates an expected call of GetTrainerRequestById.
+func (mr *MockUserMockRecorder) GetTrainerRequestById(requestId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerRequestById", reflect.TypeOf((*MockUser)(nil).GetTrainerRequestById), requestId)
+}
+
+// GetTrainerRequests mocks base method.
+func (m *MockUser) GetTrainerRequests(trainerId int64) ([]*entity.Request, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTrainerRequests", trainerId)
+	ret0, _ := ret[0].([]*entity.Request)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTrainerRequests indicates an expected call of GetTrainerRequests.
+func (mr *MockUserMockRecorder) GetTrainerRequests(trainerId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerRequests", reflect.TypeOf((*MockUser)(nil).GetTrainerRequests), trainerId)
+}
+
+// GetTrainerUserById mocks base method.
+func (m *MockUser) GetTrainerUserById(trainerId, userId int64) (*entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTrainerUserById", trainerId, userId)
 	ret0, _ := ret[0].(*entity.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUser indicates an expected call of GetUser.
-func (mr *MockUserMockRecorder) GetUser(id interface{}) *gomock.Call {
+// GetTrainerUserById indicates an expected call of GetTrainerUserById.
+func (mr *MockUserMockRecorder) GetTrainerUserById(trainerId, userId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockUser)(nil).GetUser), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerUserById", reflect.TypeOf((*MockUser)(nil).GetTrainerUserById), trainerId, userId)
+}
+
+// GetTrainerUsers mocks base method.
+func (m *MockUser) GetTrainerUsers(trainerId int64) ([]*entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTrainerUsers", trainerId)
+	ret0, _ := ret[0].([]*entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTrainerUsers indicates an expected call of GetTrainerUsers.
+func (mr *MockUserMockRecorder) GetTrainerUsers(trainerId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerUsers", reflect.TypeOf((*MockUser)(nil).GetTrainerUsers), trainerId)
+}
+
+// GetTrainerWorkouts mocks base method.
+func (m *MockUser) GetTrainerWorkouts(trainerId int64) ([]*entity.Workout, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTrainerWorkouts", trainerId)
+	ret0, _ := ret[0].([]*entity.Workout)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTrainerWorkouts indicates an expected call of GetTrainerWorkouts.
+func (mr *MockUserMockRecorder) GetTrainerWorkouts(trainerId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerWorkouts", reflect.TypeOf((*MockUser)(nil).GetTrainerWorkouts), trainerId)
+}
+
+// GetTrainerWorkoutsWithUser mocks base method.
+func (m *MockUser) GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]*entity.Workout, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTrainerWorkoutsWithUser", trainerId, userId)
+	ret0, _ := ret[0].([]*entity.Workout)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTrainerWorkoutsWithUser indicates an expected call of GetTrainerWorkoutsWithUser.
+func (mr *MockUserMockRecorder) GetTrainerWorkoutsWithUser(trainerId, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerWorkoutsWithUser", reflect.TypeOf((*MockUser)(nil).GetTrainerWorkoutsWithUser), trainerId, userId)
+}
+
+// GetTrainers mocks base method.
+func (m *MockUser) GetTrainers() ([]*entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTrainers")
+	ret0, _ := ret[0].([]*entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTrainers indicates an expected call of GetTrainers.
+func (mr *MockUserMockRecorder) GetTrainers() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainers", reflect.TypeOf((*MockUser)(nil).GetTrainers))
+}
+
+// GetUserInfoById mocks base method.
+func (m *MockUser) GetUserInfoById(id int64) (*entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserInfoById", id)
+	ret0, _ := ret[0].(*entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserInfoById indicates an expected call of GetUserInfoById.
+func (mr *MockUserMockRecorder) GetUserInfoById(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserInfoById", reflect.TypeOf((*MockUser)(nil).GetUserInfoById), id)
 }
 
 // GetUserPartnerships mocks base method.
@@ -205,6 +339,21 @@ func (mr *MockUserMockRecorder) GetUserPartnerships(userId interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPartnerships", reflect.TypeOf((*MockUser)(nil).GetUserPartnerships), userId)
 }
 
+// GetUserWorkouts mocks base method.
+func (m *MockUser) GetUserWorkouts(id int64) ([]*entity.Workout, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserWorkouts", id)
+	ret0, _ := ret[0].([]*entity.Workout)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserWorkouts indicates an expected call of GetUserWorkouts.
+func (mr *MockUserMockRecorder) GetUserWorkouts(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserWorkouts", reflect.TypeOf((*MockUser)(nil).GetUserWorkouts), id)
+}
+
 // GetWorkoutById mocks base method.
 func (m *MockUser) GetWorkoutById(workoutId, userId int64) (*entity.Workout, error) {
 	m.ctrl.T.Helper()
@@ -218,6 +367,21 @@ func (m *MockUser) GetWorkoutById(workoutId, userId int64) (*entity.Workout, err
 func (mr *MockUserMockRecorder) GetWorkoutById(workoutId, userId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkoutById", reflect.TypeOf((*MockUser)(nil).GetWorkoutById), workoutId, userId)
+}
+
+// InitPartnershipWithUser mocks base method.
+func (m *MockUser) InitPartnershipWithUser(trainerId, userId int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitPartnershipWithUser", trainerId, userId)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitPartnershipWithUser indicates an expected call of InitPartnershipWithUser.
+func (mr *MockUserMockRecorder) InitPartnershipWithUser(trainerId, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitPartnershipWithUser", reflect.TypeOf((*MockUser)(nil).InitPartnershipWithUser), trainerId, userId)
 }
 
 // ParseToken mocks base method.
