@@ -7,10 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"time"
 )
 
-func (h *Handler) getAllTrainerUsers(c *gin.Context) {
+func (h *Handler) getTrainerUsers(c *gin.Context) {
 	id, err := h.getId(c)
 	if err != nil || id < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
@@ -25,7 +24,7 @@ func (h *Handler) getAllTrainerUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-func (h *Handler) getAllTrainerRequests(c *gin.Context) {
+func (h *Handler) getTrainerRequests(c *gin.Context) {
 	id, err := h.getId(c)
 	if err != nil || id < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
@@ -40,7 +39,7 @@ func (h *Handler) getAllTrainerRequests(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-func (h *Handler) getTrainerUser(c *gin.Context) {
+func (h *Handler) getTrainerUserById(c *gin.Context) {
 	trainerId, err := h.getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
@@ -59,7 +58,7 @@ func (h *Handler) getTrainerUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func (h *Handler) getTrainerRequest(c *gin.Context) {
+func (h *Handler) getTrainerRequestById(c *gin.Context) {
 	trainerId, err := h.getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
@@ -70,7 +69,7 @@ func (h *Handler) getTrainerRequest(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
 		return
 	}
-	user, err := h.services.GetTrainerRequestById(requestId)
+	user, err := h.services.GetTrainerRequestById(trainerId, requestId)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
@@ -183,7 +182,12 @@ func (h *Handler) createTrainerWorkout(c *gin.Context) {
 	}
 
 	var input entity.Workout
-	err = initTrainerWorkout(c, &input, trainerId)
+	if err := c.ShouldBindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	err = formatTrainerWorkout(&input, trainerId)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
@@ -208,6 +212,7 @@ func (h *Handler) getTrainerWorkouts(c *gin.Context) {
 	workouts, err := h.services.GetTrainerWorkouts(trainerId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
 	}
 	c.JSON(http.StatusOK, workouts)
 }
@@ -224,12 +229,15 @@ func (h *Handler) getTrainerWorkoutsWithUser(c *gin.Context) {
 		return
 	}
 
+	workouts, err := h.services.GetTrainerWorkoutsWithUser(trainerId, userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, workouts)
 }
 
-func initTrainerWorkout(c *gin.Context, input *entity.Workout, trainerId int64) error {
-	if err := c.ShouldBindJSON(&input); err != nil {
-		return err
-	}
+func formatTrainerWorkout(input *entity.Workout, trainerId int64) error {
 
 	if !input.TrainerId.Valid {
 		input.TrainerId = sql.NullInt64{Int64: trainerId, Valid: true}
@@ -237,10 +245,6 @@ func initTrainerWorkout(c *gin.Context, input *entity.Workout, trainerId int64) 
 
 	if input.TrainerId.Int64 != trainerId {
 		return errors.New("trainer_id from token and trainer_id from workout must match")
-	}
-
-	if input.Date.IsZero() {
-		input.Date = time.Now()
 	}
 
 	if input.UserId < 1 {

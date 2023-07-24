@@ -115,11 +115,11 @@ func (s *UserService) GetTrainerRequests(trainerId int64) ([]*entity.Request, er
 }
 
 func (s *UserService) GetTrainerUserById(trainerId, userId int64) (*entity.User, error) {
-	return s.repo.GetTrainerUser(trainerId, userId)
+	return s.repo.GetTrainerUserById(trainerId, userId)
 }
 
-func (s *UserService) GetTrainerRequestById(requestId int64) (*entity.Request, error) {
-	return s.repo.GetTrainerRequest(requestId)
+func (s *UserService) GetTrainerRequestById(trainerId, requestId int64) (*entity.Request, error) {
+	return s.repo.GetTrainerRequestById(trainerId, requestId)
 }
 
 func (s *UserService) InitPartnershipWithUser(trainerId, userId int64) (int64, error) {

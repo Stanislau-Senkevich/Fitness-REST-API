@@ -28,7 +28,7 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func (h *Handler) createWorkout(c *gin.Context) {
+func (h *Handler) createUserWorkout(c *gin.Context) {
 	userId, err := h.getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)

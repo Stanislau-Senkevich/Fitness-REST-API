@@ -54,13 +54,13 @@ func (h *Handler) initAdminRoutes(router *gin.Engine) {
 func (h *Handler) initTrainerRoutes(router *gin.Engine) {
 	trainer := router.Group("/trainer", h.trainerIdentity)
 	{
-		trainer.GET("/user", h.getAllTrainerUsers)
-		trainer.GET("/user/:id", h.getTrainerUser)
+		trainer.GET("/user", h.getTrainerUsers)
+		trainer.GET("/user/:id", h.getTrainerUserById)
 		trainer.POST("/user/:id", h.initPartnershipWithUser)
 		trainer.PUT("/user/:id", h.endPartnershipWithUser)
 
-		trainer.GET("/request", h.getAllTrainerRequests)
-		trainer.GET("/request/:id", h.getTrainerRequest)
+		trainer.GET("/request", h.getTrainerRequests)
+		trainer.GET("/request/:id", h.getTrainerRequestById)
 		trainer.PUT("/request/:id", h.acceptRequest)
 		trainer.DELETE("/request/:id", h.denyRequest)
 
@@ -80,7 +80,7 @@ func (h *Handler) initUserRoutes(router *gin.Engine) {
 
 		user.GET("/workout", h.getUserWorkouts)
 		user.GET("/workout/:id", h.getWorkoutById)
-		user.POST("/workout", h.createWorkout)
+		user.POST("/workout", h.createUserWorkout)
 		user.PUT("/workout/:id", h.updateWorkout)
 		user.DELETE("/workout/:id", h.deleteWorkout)
 

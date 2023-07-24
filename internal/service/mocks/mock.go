@@ -205,18 +205,18 @@ func (mr *MockUserMockRecorder) GetTrainerById(id interface{}) *gomock.Call {
 }
 
 // GetTrainerRequestById mocks base method.
-func (m *MockUser) GetTrainerRequestById(requestId int64) (*entity.Request, error) {
+func (m *MockUser) GetTrainerRequestById(trainerId, requestId int64) (*entity.Request, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTrainerRequestById", requestId)
+	ret := m.ctrl.Call(m, "GetTrainerRequestById", trainerId, requestId)
 	ret0, _ := ret[0].(*entity.Request)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTrainerRequestById indicates an expected call of GetTrainerRequestById.
-func (mr *MockUserMockRecorder) GetTrainerRequestById(requestId interface{}) *gomock.Call {
+func (mr *MockUserMockRecorder) GetTrainerRequestById(trainerId, requestId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerRequestById", reflect.TypeOf((*MockUser)(nil).GetTrainerRequestById), requestId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrainerRequestById", reflect.TypeOf((*MockUser)(nil).GetTrainerRequestById), trainerId, requestId)
 }
 
 // GetTrainerRequests mocks base method.

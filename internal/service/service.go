@@ -37,7 +37,7 @@ type User interface {
 	GetTrainerUsers(trainerId int64) ([]*entity.User, error)
 	GetTrainerRequests(trainerId int64) ([]*entity.Request, error)
 	GetTrainerUserById(trainerId, userId int64) (*entity.User, error)
-	GetTrainerRequestById(requestId int64) (*entity.Request, error)
+	GetTrainerRequestById(trainerId, requestId int64) (*entity.Request, error)
 	InitPartnershipWithUser(trainerId, userId int64) (int64, error)
 	EndPartnershipWithUser(trainerId, userId int64) (int64, error)
 	AcceptRequest(trainerId, requestId int64) (int64, error)

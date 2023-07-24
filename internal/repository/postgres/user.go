@@ -302,7 +302,7 @@ func (r *UserRepository) GetTrainerRequests(trainerId int64) ([]*entity.Request,
 	return requests, nil
 }
 
-func (r *UserRepository) GetTrainerUser(trainerId, userId int64) (*entity.User, error) {
+func (r *UserRepository) GetTrainerUserById(trainerId, userId int64) (*entity.User, error) {
 	if !r.IsTrainer(trainerId) {
 		return nil, errors.New("not a trainer was provided")
 	}
@@ -321,7 +321,7 @@ func (r *UserRepository) GetTrainerUser(trainerId, userId int64) (*entity.User, 
 	return &user, nil
 }
 
-func (r *UserRepository) GetTrainerRequest(requestId int64) (*entity.Request, error) {
+func (r *UserRepository) GetTrainerRequestById(trainerId, requestId int64) (*entity.Request, error) {
 	var p entity.Partnership
 	query := fmt.Sprintf("SELECT * FROM %s WHERE id = $1", partnershipsTable)
 	err := r.db.Get(&p, query, requestId)
@@ -329,7 +329,10 @@ func (r *UserRepository) GetTrainerRequest(requestId int64) (*entity.Request, er
 		return nil, err
 	}
 	if !hasRequestOnPartnership(&p) {
-		return nil, errors.New("no request to you on that id")
+		return nil, errors.New("no request for you on that id")
+	}
+	if p.TrainerId != trainerId {
+		return nil, errors.New("no access to request")
 	}
 
 	var req entity.Request
