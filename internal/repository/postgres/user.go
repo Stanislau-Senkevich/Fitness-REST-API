@@ -34,6 +34,13 @@ func (r *UserRepository) IsTrainer(userId int64) bool {
 	return user.Role == entity.TrainerRole
 }
 
+func (r *UserRepository) IsUser(id int64) bool {
+	var user entity.User
+	query := fmt.Sprintf("SELECT id FROM %s WHERE id = $1", userTable)
+	err := r.db.Get(&user, query, id)
+	return err == nil
+}
+
 func (r *UserRepository) CreateUser(user *entity.User) (int64, error) {
 	var id int64
 	if r.HasEmail(user.Email) {
@@ -360,7 +367,7 @@ func (r *UserRepository) InitPartnershipWithUser(trainerId, userId int64) (int64
 	var id int64
 	p, err := r.GetPartnership(trainerId, userId)
 	if err != nil {
-		query := fmt.Sprintf("INSERT INTO %s (trainer_id, user_id, status) values ($1, $2, %s) RETURNING ID",
+		query := fmt.Sprintf("INSERT INTO %s (trainer_id, user_id, status) values ($1, $2, %s) RETURNING id",
 			partnershipsTable, "'"+entity.StatusApproved+"'")
 		row := r.db.QueryRow(query, trainerId, userId)
 		if err := row.Scan(&id); err != nil {
@@ -374,7 +381,7 @@ func (r *UserRepository) InitPartnershipWithUser(trainerId, userId int64) (int64
 	case entity.StatusApproved:
 		return p.Id, nil
 	case entity.StatusEndedByTrainer, entity.StatusRequest:
-		query := fmt.Sprintf("UPDATE %s SET status = %s WHERE id = $1",
+		query := fmt.Sprintf("UPDATE %s SET status = %s, ended_at = null WHERE id = $1",
 			partnershipsTable, "'"+entity.StatusApproved+"'")
 		_, err := r.db.Exec(query, p.Id)
 		if err != nil {
@@ -467,13 +474,6 @@ func (r *UserRepository) GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]
 		return nil, err
 	}
 	return workouts, nil
-}
-
-func (r *UserRepository) IsUser(id int64) bool {
-	var user entity.User
-	query := fmt.Sprintf("SELECT id FROM %s WHERE id = $1", userTable)
-	err := r.db.Get(&user, query, id)
-	return err == nil
 }
 
 func hasApprovedPartnership(p *entity.Partnership) bool {

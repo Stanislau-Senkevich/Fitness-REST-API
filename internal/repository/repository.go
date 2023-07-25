@@ -48,5 +48,4 @@ type User interface {
 	CreateWorkoutAsTrainer(workout *entity.Workout) (int64, error)
 	GetTrainerWorkouts(trainerId int64) ([]*entity.Workout, error)
 	GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]*entity.Workout, error)
-	IsUser(id int64) bool
 }
