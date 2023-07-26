@@ -16,12 +16,17 @@ const (
 type Admin interface {
 	SignIn(login, passwordHash string) (string, error)
 	ParseToken(token string) error
+	GetUsersId(role entity.Role) ([]int64, error)
+	GetUserFullInfoById(userId int64) (*entity.UserInfo, error)
+	CreateUser(user *entity.User) (int64, error)
+	UpdateUser(userId int64, update *entity.UserUpdate) error
+	DeleteUser(userId int64) error
 }
 
 type User interface {
-	SignIn(email, passwordHash, role string) (string, error)
+	SignIn(email, passwordHash string, role entity.Role) (string, error)
 	SignUp(user *entity.User) (int64, error)
-	ParseToken(token string) (int64, string, error)
+	ParseToken(token string) (int64, entity.Role, error)
 	GetUserInfoById(id int64) (*entity.User, error)
 	CreateWorkoutAsUser(workout *entity.Workout) (int64, error)
 	UpdateWorkout(workoutId, userId int64, update *entity.UpdateWorkout) error
@@ -45,6 +50,8 @@ type User interface {
 	CreateWorkoutAsTrainer(workout *entity.Workout) (int64, error)
 	GetTrainerWorkouts(trainerId int64) ([]*entity.Workout, error)
 	GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]*entity.Workout, error)
+
+	GetPasswordHash(password string) string
 }
 
 type Services struct {
@@ -57,13 +64,13 @@ type Dependencies struct {
 
 type tokenClaims struct {
 	jwt.StandardClaims
-	ID   int64  `json:"id"`
-	Role string `json:"role"`
+	ID   int64       `json:"id"`
+	Role entity.Role `json:"role"`
 }
 
 func NewService(repos *repository.Repository) *Services {
 	return &Services{
-		Admin: NewAdminService(repos.Admin, "ergeringeriger", "psgvjviops"),
+		Admin: NewAdminService(repos.Admin, repos.User, "ergeringeriger", "psgvjviops"),
 		User:  NewUserService(repos.User, "ergeringeriger", "etiwepirefbjsd"),
 	}
 }

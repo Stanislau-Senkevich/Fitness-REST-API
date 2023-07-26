@@ -163,7 +163,7 @@ func TestHandler_userIdentity(t *testing.T) {
 			expectedResponseBody: `{"error":"invalid auth header"}`,
 		},
 		{
-			name:                 "Empty token",
+			name:                 "Empty token 2",
 			headerName:           "Authorization",
 			headerValue:          "Bearer ",
 			token:                "token",
@@ -177,7 +177,8 @@ func TestHandler_userIdentity(t *testing.T) {
 			headerValue: "Bearer token",
 			token:       "token",
 			mockBehavior: func(r *mock_service.MockUser, token string) {
-				r.EXPECT().ParseToken(token).Return(int64(-1), "", errors.New("some parsing error"))
+				var empty entity.Role
+				r.EXPECT().ParseToken(token).Return(int64(-1), empty, errors.New("some parsing error"))
 			},
 			expectedStatusCode:   401,
 			expectedResponseBody: `{"error":"some parsing error"}`,
@@ -266,7 +267,7 @@ func TestHandler_trainerIdentity(t *testing.T) {
 			expectedResponseBody: `{"error":"invalid auth header"}`,
 		},
 		{
-			name:                 "Empty token",
+			name:                 "Empty token 2",
 			headerName:           "Authorization",
 			headerValue:          "Bearer ",
 			token:                "token",
@@ -280,7 +281,8 @@ func TestHandler_trainerIdentity(t *testing.T) {
 			headerValue: "Bearer token",
 			token:       "token",
 			mockBehavior: func(r *mock_service.MockUser, token string) {
-				r.EXPECT().ParseToken(token).Return(int64(-1), "", errors.New("some parsing error"))
+				var empty entity.Role
+				r.EXPECT().ParseToken(token).Return(int64(-1), empty, errors.New("some parsing error"))
 			},
 			expectedStatusCode:   401,
 			expectedResponseBody: `{"error":"some parsing error"}`,

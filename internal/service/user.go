@@ -19,8 +19,8 @@ func NewUserService(repos repository.User, hashSalt string, signingKey string) *
 	return &UserService{repo: repos, hashSalt: hashSalt, signingKey: []byte(signingKey)}
 }
 
-func (s *UserService) SignIn(email, password, role string) (string, error) {
-	id, err := s.repo.Authorize(email, s.getPasswordHash(password), role)
+func (s *UserService) SignIn(email, password string, role entity.Role) (string, error) {
+	id, err := s.repo.Authorize(email, s.GetPasswordHash(password), role)
 	if err != nil {
 		return "", err
 	}
@@ -38,11 +38,11 @@ func (s *UserService) SignIn(email, password, role string) (string, error) {
 }
 
 func (s *UserService) SignUp(user *entity.User) (int64, error) {
-	user.PasswordHash = s.getPasswordHash(user.PasswordHash)
-	return s.repo.CreateUser(user)
+	user.PasswordHash = s.GetPasswordHash(user.PasswordHash)
+	return s.repo.CreateUser(user, entity.UserRole)
 }
 
-func (s *UserService) ParseToken(token string) (int64, string, error) {
+func (s *UserService) ParseToken(token string) (int64, entity.Role, error) {
 	t, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -150,7 +150,7 @@ func (s *UserService) GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]*en
 	return s.repo.GetTrainerWorkoutsWithUser(trainerId, userId)
 }
 
-func (s *UserService) getPasswordHash(password string) string {
+func (s *UserService) GetPasswordHash(password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(s.hashSalt))
 

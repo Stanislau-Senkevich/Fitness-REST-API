@@ -15,12 +15,12 @@ const (
 )
 
 type Partnership struct {
-	Id        int64        `db:"id"`
-	UserId    int64        `db:"user_id"`
-	TrainerId int64        `db:"trainer_id"`
-	Status    Status       `db:"status"`
-	CreatedAt time.Time    `db:"created_at"`
-	EndedAt   sql.NullTime `db:"ended_at"`
+	Id        int64        `db:"id" json:"id"`
+	UserId    int64        `db:"user_id" json:"user_id"`
+	TrainerId int64        `db:"trainer_id" json:"trainer_id"`
+	Status    Status       `db:"status" json:"status"`
+	CreatedAt time.Time    `db:"created_at" json:"created_at"`
+	EndedAt   sql.NullTime `db:"ended_at" json:"ended_at,omitempty"`
 }
 
 type Request struct {

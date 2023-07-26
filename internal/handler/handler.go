@@ -37,17 +37,13 @@ func (h *Handler) initAuthRoutes(router *gin.Engine) {
 func (h *Handler) initAdminRoutes(router *gin.Engine) {
 	admin := router.Group("/admin", h.adminIdentity)
 	{
-		admin.GET("/user", h.getAllUsers)
-		admin.GET("/user/:id", h.getUserByID)
+		admin.GET("/user", h.getAllUsersFullInfo)
+		admin.GET("/user/:id", h.getUserFullInfoByID)
+		admin.POST("/user", h.createUser)
 		admin.PUT("/user/:id", h.updateUser)
 		admin.DELETE("/user/:id", h.deleteUser)
-		admin.POST("/user", h.createUser)
 
-		admin.GET("/trainer", h.getAllTrainers)
-		admin.GET("/trainer/:id", h.getTrainerById)
-		admin.PUT("/trainer/:id", h.updateTrainer)
-		admin.DELETE("/trainer/:id", h.deleteTrainer)
-		admin.POST("/trainer", h.createTrainer)
+		admin.GET("/trainer", h.getTrainersInfo)
 	}
 }
 

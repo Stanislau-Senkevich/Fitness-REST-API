@@ -34,6 +34,65 @@ func (m *MockAdmin) EXPECT() *MockAdminMockRecorder {
 	return m.recorder
 }
 
+// CreateUser mocks base method.
+func (m *MockAdmin) CreateUser(user *entity.User) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUser", user)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUser indicates an expected call of CreateUser.
+func (mr *MockAdminMockRecorder) CreateUser(user interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockAdmin)(nil).CreateUser), user)
+}
+
+// DeleteUser mocks base method.
+func (m *MockAdmin) DeleteUser(userId int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUser", userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUser indicates an expected call of DeleteUser.
+func (mr *MockAdminMockRecorder) DeleteUser(userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockAdmin)(nil).DeleteUser), userId)
+}
+
+// GetUserFullInfoById mocks base method.
+func (m *MockAdmin) GetUserFullInfoById(userId int64) (*entity.UserInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserFullInfoById", userId)
+	ret0, _ := ret[0].(*entity.UserInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserFullInfoById indicates an expected call of GetUserFullInfoById.
+func (mr *MockAdminMockRecorder) GetUserFullInfoById(userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFullInfoById", reflect.TypeOf((*MockAdmin)(nil).GetUserFullInfoById), userId)
+}
+
+// GetUsersId mocks base method.
+func (m *MockAdmin) GetUsersId(role entity.Role) ([]int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersId", role)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersId indicates an expected call of GetUsersId.
+func (mr *MockAdminMockRecorder) GetUsersId(role interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersId", reflect.TypeOf((*MockAdmin)(nil).GetUsersId), role)
+}
+
 // ParseToken mocks base method.
 func (m *MockAdmin) ParseToken(token string) error {
 	m.ctrl.T.Helper()
@@ -61,6 +120,20 @@ func (m *MockAdmin) SignIn(login, passwordHash string) (string, error) {
 func (mr *MockAdminMockRecorder) SignIn(login, passwordHash interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignIn", reflect.TypeOf((*MockAdmin)(nil).SignIn), login, passwordHash)
+}
+
+// UpdateUser mocks base method.
+func (m *MockAdmin) UpdateUser(userId int64, update *entity.UserUpdate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", userId, update)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockAdminMockRecorder) UpdateUser(userId, update interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockAdmin)(nil).UpdateUser), userId, update)
 }
 
 // MockUser is a mock of User interface.
@@ -187,6 +260,20 @@ func (m *MockUser) EndPartnershipWithUser(trainerId, userId int64) (int64, error
 func (mr *MockUserMockRecorder) EndPartnershipWithUser(trainerId, userId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EndPartnershipWithUser", reflect.TypeOf((*MockUser)(nil).EndPartnershipWithUser), trainerId, userId)
+}
+
+// GetPasswordHash mocks base method.
+func (m *MockUser) GetPasswordHash(password string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPasswordHash", password)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetPasswordHash indicates an expected call of GetPasswordHash.
+func (mr *MockUserMockRecorder) GetPasswordHash(password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPasswordHash", reflect.TypeOf((*MockUser)(nil).GetPasswordHash), password)
 }
 
 // GetTrainerById mocks base method.
@@ -385,11 +472,11 @@ func (mr *MockUserMockRecorder) InitPartnershipWithUser(trainerId, userId interf
 }
 
 // ParseToken mocks base method.
-func (m *MockUser) ParseToken(token string) (int64, string, error) {
+func (m *MockUser) ParseToken(token string) (int64, entity.Role, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ParseToken", token)
 	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(string)
+	ret1, _ := ret[1].(entity.Role)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
@@ -416,7 +503,7 @@ func (mr *MockUserMockRecorder) SendRequestToTrainer(trainerId, userId interface
 }
 
 // SignIn mocks base method.
-func (m *MockUser) SignIn(email, passwordHash, role string) (string, error) {
+func (m *MockUser) SignIn(email, passwordHash string, role entity.Role) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SignIn", email, passwordHash, role)
 	ret0, _ := ret[0].(string)

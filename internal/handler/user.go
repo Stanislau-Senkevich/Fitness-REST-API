@@ -25,6 +25,7 @@ func (h *Handler) getUserInfo(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
+	user.PasswordHash = ""
 	c.JSON(http.StatusOK, user)
 }
 

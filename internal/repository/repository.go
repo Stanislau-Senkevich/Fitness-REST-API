@@ -23,8 +23,10 @@ type Admin interface {
 }
 
 type User interface {
-	Authorize(email, passwordHash, role string) (int64, error)
-	CreateUser(user *entity.User) (int64, error)
+	Authorize(email, passwordHash string, role entity.Role) (int64, error)
+	CreateUser(user *entity.User, status entity.Role) (int64, error)
+	UpdateUser(userId int64, update *entity.UserUpdate) error
+	DeleteUser(userId int64) error
 	GetUserInfoById(id int64) (*entity.User, error)
 	CreateWorkoutAsUser(*entity.Workout) (int64, error)
 	UpdateWorkout(workoutId, userId int64, update *entity.UpdateWorkout) error
@@ -48,4 +50,7 @@ type User interface {
 	CreateWorkoutAsTrainer(workout *entity.Workout) (int64, error)
 	GetTrainerWorkouts(trainerId int64) ([]*entity.Workout, error)
 	GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]*entity.Workout, error)
+
+	GetUsersId(role entity.Role) ([]int64, error)
+	GetUserFullInfoById(userId int64) (*entity.UserInfo, error)
 }

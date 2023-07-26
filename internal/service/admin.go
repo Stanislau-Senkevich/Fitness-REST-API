@@ -1,6 +1,7 @@
 package service
 
 import (
+	"Fitness_REST_API/internal/entity"
 	"Fitness_REST_API/internal/repository"
 	"crypto/sha1"
 	"fmt"
@@ -9,17 +10,18 @@ import (
 )
 
 type AdminService struct {
-	repos      repository.Admin
+	adminRepo  repository.Admin
+	userRepo   repository.User
 	hashSalt   string
 	signingKey []byte
 }
 
-func NewAdminService(repos repository.Admin, hashSalt string, signingKey string) *AdminService {
-	return &AdminService{repos: repos, hashSalt: hashSalt, signingKey: []byte(signingKey)}
+func NewAdminService(adminRepo repository.Admin, userRepo repository.User, hashSalt string, signingKey string) *AdminService {
+	return &AdminService{adminRepo: adminRepo, userRepo: userRepo, hashSalt: hashSalt, signingKey: []byte(signingKey)}
 }
 
 func (s *AdminService) SignIn(login, password string) (string, error) {
-	err := s.repos.Authorize(login, s.getPasswordHash(password))
+	err := s.adminRepo.Authorize(login, s.getPasswordHash(password))
 	if err != nil {
 		return "", err
 	}
@@ -57,4 +59,23 @@ func (s *AdminService) getPasswordHash(password string) string {
 	hash.Write([]byte(s.hashSalt))
 
 	return fmt.Sprintf("%x", sha1.Sum([]byte(password)))
+}
+
+func (s *AdminService) GetUsersId(role entity.Role) ([]int64, error) {
+	return s.userRepo.GetUsersId(role)
+}
+
+func (s *AdminService) GetUserFullInfoById(userId int64) (*entity.UserInfo, error) {
+	return s.userRepo.GetUserFullInfoById(userId)
+}
+
+func (s *AdminService) CreateUser(user *entity.User) (int64, error) {
+	return s.userRepo.CreateUser(user, user.Role)
+}
+
+func (s *AdminService) UpdateUser(userId int64, update *entity.UserUpdate) error {
+	return s.userRepo.UpdateUser(userId, update)
+}
+func (s *AdminService) DeleteUser(userId int64) error {
+	return s.userRepo.DeleteUser(userId)
 }

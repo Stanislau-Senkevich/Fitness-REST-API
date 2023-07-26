@@ -366,7 +366,7 @@ func TestHandler_getPartnerships(t *testing.T) {
 				r.EXPECT().GetUserPartnerships(userId).Return([]*entity.Partnership{{Id: 1, UserId: 1, TrainerId: 1}, {Id: 2, UserId: 1, TrainerId: 2}}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"Id":1,"UserId":1,"TrainerId":1,"Status":"","CreatedAt":"0001-01-01T00:00:00Z","EndedAt":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"Id":2,"UserId":1,"TrainerId":2,"Status":"","CreatedAt":"0001-01-01T00:00:00Z","EndedAt":{"Time":"0001-01-01T00:00:00Z","Valid":false}}]`,
+			expectedResponseBody: `[{"id":1,"user_id":1,"trainer_id":1,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":2,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}]`,
 		},
 		{
 			name:   "No partnerships",

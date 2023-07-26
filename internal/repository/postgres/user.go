@@ -16,7 +16,7 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) Authorize(email, passwordHash, role string) (int64, error) {
+func (r *UserRepository) Authorize(email, passwordHash string, role entity.Role) (int64, error) {
 	var user entity.User
 
 	query := fmt.Sprintf("SELECT * FROM %s WHERE email = $1 AND password_hash = $2 AND role = $3", userTable)
@@ -41,13 +41,14 @@ func (r *UserRepository) IsUser(id int64) bool {
 	return err == nil
 }
 
-func (r *UserRepository) CreateUser(user *entity.User) (int64, error) {
+func (r *UserRepository) CreateUser(user *entity.User, role entity.Role) (int64, error) {
 	var id int64
 	if r.HasEmail(user.Email) {
 		return -1, errors.New("email has already reserved")
 	}
 
-	query := fmt.Sprintf("INSERT INTO %s (email, password_hash, name, surname) values ($1, $2, $4, $5) RETURNING id", userTable)
+	query := fmt.Sprintf("INSERT INTO %s (email, password_hash, role, name, surname) values ($1, $2, '%s', $3, $4) RETURNING id",
+		userTable, role)
 	row := r.db.QueryRow(query, user.Email, user.PasswordHash, user.Name, user.Surname)
 	if err := row.Scan(&id); err != nil {
 		return 0, err
@@ -64,7 +65,7 @@ func (r *UserRepository) HasEmail(email string) bool {
 
 func (r *UserRepository) GetUserInfoById(id int64) (*entity.User, error) {
 	var user entity.User
-	query := fmt.Sprintf("SELECT id, email, name, surname, created_at FROM %s WHERE id = $1", userTable)
+	query := fmt.Sprintf("SELECT id, email, password_hash, name, surname, role, created_at FROM %s WHERE id = $1", userTable)
 	err := r.db.Get(&user, query, id)
 	return &user, err
 }
@@ -257,6 +258,16 @@ func (r *UserRepository) EndPartnershipWithTrainer(trainerId, userId int64) (int
 		return 0, err
 	}
 	return p.Id, nil
+}
+
+func (r *UserRepository) GetTrainerPartnerships(userId int64) ([]*entity.Partnership, error) {
+	partnerships := make([]*entity.Partnership, 0)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE trainer_id = $1 ORDER BY created_at DESC", partnershipsTable)
+	err := r.db.Select(&partnerships, query, userId)
+	if err != nil {
+		return nil, err
+	}
+	return partnerships, nil
 }
 
 func (r *UserRepository) GetTrainerUsers(trainerId int64) ([]*entity.User, error) {
@@ -474,6 +485,101 @@ func (r *UserRepository) GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]
 		return nil, err
 	}
 	return workouts, nil
+}
+
+func (r *UserRepository) GetUsersId(role entity.Role) ([]int64, error) {
+	idSlice := make([]int64, 0)
+	query := fmt.Sprintf("SELECT id FROM %s WHERE role = '%s'", userTable, role)
+	err := r.db.Select(&idSlice, query)
+	if err != nil {
+		return nil, err
+	}
+	return idSlice, nil
+}
+
+func (r *UserRepository) GetUserFullInfoById(userId int64) (*entity.UserInfo, error) {
+	user, err := r.GetUserInfoById(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var userInfo entity.UserInfo
+	userInfo.Id = user.Id
+	userInfo.Email = user.Email
+	userInfo.Role = user.Role
+	userInfo.Name = user.Name
+	userInfo.Surname = user.Surname
+	userInfo.CreatedAt = user.CreatedAt
+
+	switch user.Role {
+	case entity.UserRole:
+		partnerships, err := r.GetUserPartnerships(userId)
+		if err != nil {
+			return nil, err
+		}
+		userInfo.Partnerships = partnerships
+		workouts, err := r.GetUserWorkouts(userId)
+		if err != nil {
+			return nil, err
+		}
+		userInfo.Workouts = workouts
+	case entity.TrainerRole:
+		partnerships, err := r.GetTrainerPartnerships(userId)
+		if err != nil {
+			return nil, err
+		}
+		userInfo.Partnerships = partnerships
+		workouts, err := r.GetTrainerWorkouts(userId)
+		if err != nil {
+			return nil, err
+		}
+		userInfo.Workouts = workouts
+	default:
+		return nil, errors.New("undefined user role")
+	}
+	return &userInfo, nil
+}
+
+func (r *UserRepository) UpdateUser(userId int64, update *entity.UserUpdate) error {
+	user, err := r.GetUserInfoById(userId)
+	if err != nil {
+		return errors.New("invalid userId")
+	}
+	if user.Email != update.Email && r.HasEmail(update.Email) {
+		return errors.New("provided email has already been reserved")
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET email = $1, password_hash = $2, role = $3, "+
+		"name = $4, surname = $5 WHERE id = $6",
+		userTable)
+	_, err = r.db.Exec(query, update.Email, update.Password, update.Role, update.Name, update.Surname, userId)
+	return err
+}
+
+func (r *UserRepository) DeleteUser(userId int64) error {
+	if !r.IsUser(userId) {
+		return errors.New("no user to delete")
+	}
+	tx, err := r.db.Begin()
+	query := fmt.Sprintf("DELETE FROM %s WHERE user_id = $1", partnershipsTable)
+	_, err = tx.Exec(query, userId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	query = fmt.Sprintf("DELETE FROM %s WHERE user_id = $1", workoutsTable)
+	_, err = tx.Exec(query, userId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	query = fmt.Sprintf("DELETE FROM %s WHERE id = $1", userTable)
+	_, err = tx.Exec(query, userId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit()
 }
 
 func hasApprovedPartnership(p *entity.Partnership) bool {

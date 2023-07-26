@@ -239,7 +239,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			r := NewUserRepository(db)
 			test.mockBehaviour()
-			got, err := r.CreateUser(&test.inputUser)
+			got, err := r.CreateUser(&test.inputUser, entity.UserRole)
 
 			if test.shouldFail {
 				assert.Error(t, err)
@@ -299,7 +299,7 @@ func TestUserRepository_HasEmail(t *testing.T) {
 	}
 }
 
-func TestUserRepository_GetUser(t *testing.T) {
+func TestUserRepository_GetUserInfoById(t *testing.T) {
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2181,11 +2181,10 @@ func TestUserRepository_CreateWorkoutAsTrainer(t *testing.T) {
 			got, err := r.CreateWorkoutAsTrainer(&test.workout)
 			if test.shouldFail {
 				assert.Error(t, err)
-				assert.Equal(t, got, test.shouldReturn)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, got, test.shouldReturn)
 			}
+			assert.Equal(t, got, test.shouldReturn)
 		})
 	}
 }
@@ -2254,11 +2253,10 @@ func TestUserRepository_GetTrainerWorkouts(t *testing.T) {
 			got, err := r.GetTrainerWorkouts(test.trainerId)
 			if test.shouldFail {
 				assert.Error(t, err)
-				assert.Equal(t, got, test.shouldReturn)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, got, test.shouldReturn)
 			}
+			assert.Equal(t, got, test.shouldReturn)
 		})
 	}
 }
@@ -2329,10 +2327,311 @@ func TestUserRepository_GetTrainerWorkoutsWithUser(t *testing.T) {
 			got, err := r.GetTrainerWorkoutsWithUser(test.trainerId, test.userId)
 			if test.shouldFail {
 				assert.Error(t, err)
-				assert.Equal(t, got, test.shouldReturn)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, got, test.shouldReturn)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_GetUsersId(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func()
+
+	table := []struct {
+		name          string
+		role          entity.Role
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  []int64
+	}{
+		{
+			name: "Ok Users",
+			role: entity.UserRole,
+			mockBehaviour: func() {
+				rows := sqlmock.NewRows([]string{"id"}).
+					AddRow(int64(1)).AddRow(int64(2)).AddRow(int64(3)).AddRow(int64(4)).AddRow(int64(5))
+				mock.ExpectQuery("SELECT id FROM users").WillReturnRows(rows)
+			},
+			shouldFail:   false,
+			shouldReturn: []int64{1, 2, 3, 4, 5},
+		},
+		{
+			name: "Ok Trainers",
+			role: entity.TrainerRole,
+			mockBehaviour: func() {
+				rows := sqlmock.NewRows([]string{"id"}).
+					AddRow(int64(1)).AddRow(int64(2)).AddRow(int64(3)).AddRow(int64(4)).AddRow(int64(5))
+				mock.ExpectQuery("SELECT id FROM users").WillReturnRows(rows)
+			},
+			shouldFail:   false,
+			shouldReturn: []int64{1, 2, 3, 4, 5},
+		},
+		{
+			name: "Empty output",
+			role: entity.TrainerRole,
+			mockBehaviour: func() {
+				rows := sqlmock.NewRows([]string{"id"})
+				mock.ExpectQuery("SELECT id FROM users").WillReturnRows(rows)
+			},
+			shouldFail:   false,
+			shouldReturn: []int64{},
+		},
+		{
+			name: "Internal error",
+			role: entity.TrainerRole,
+			mockBehaviour: func() {
+				mock.ExpectQuery("SELECT id FROM users").WillReturnError(errors.New("internal error"))
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			r := NewUserRepository(db)
+			test.mockBehaviour()
+
+			got, err := r.GetUsersId(test.role)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_GetUserFullInfoById(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+		shouldReturn  *entity.UserInfo
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rowsUser := sqlmock.NewRows([]string{"id", "email", "role", "name", "surname"}).
+					AddRow(userId, "test", entity.UserRole, "test", "test")
+				rowsPartnership := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).
+					AddRow(int64(1), userId, int64(2), entity.StatusApproved)
+				rowsWorkout := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "title", "description"}).
+					AddRow(int64(1), userId, int64(2), "test", "test")
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rowsUser)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(userId).WillReturnRows(rowsPartnership)
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(userId).WillReturnRows(rowsWorkout)
+			},
+			shouldFail: false,
+			shouldReturn: &entity.UserInfo{
+				Id:      1,
+				Email:   "test",
+				Role:    entity.UserRole,
+				Name:    "test",
+				Surname: "test",
+				Partnerships: []*entity.Partnership{
+					{Id: 1, UserId: 1, TrainerId: 2, Status: entity.StatusApproved},
+				},
+				Workouts: []*entity.Workout{
+					{Id: 1, UserId: 1, TrainerId: sql.NullInt64{Int64: 2, Valid: true}, Title: "test", Description: "test"},
+				},
+			},
+		},
+		{
+			name:   "Invalid userId",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rowsUser := sqlmock.NewRows([]string{"id", "email", "role", "name", "surname"})
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rowsUser)
+			},
+			shouldFail:   true,
+			shouldReturn: nil,
+		},
+		{
+			name:   "Empty slices inside",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rowsUser := sqlmock.NewRows([]string{"id", "email", "role", "name", "surname"}).
+					AddRow(userId, "test", entity.UserRole, "test", "test")
+				rowsPartnership := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"})
+				rowsWorkout := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "title", "description"})
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rowsUser)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(userId).WillReturnRows(rowsPartnership)
+				mock.ExpectQuery("SELECT (.+) FROM workouts").
+					WithArgs(userId).WillReturnRows(rowsWorkout)
+			},
+			shouldFail: false,
+			shouldReturn: &entity.UserInfo{
+				Id:           1,
+				Email:        "test",
+				Role:         entity.UserRole,
+				Name:         "test",
+				Surname:      "test",
+				Partnerships: []*entity.Partnership{},
+				Workouts:     []*entity.Workout{},
+			},
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			r := NewUserRepository(db)
+			test.mockBehaviour(test.userId)
+
+			got, err := r.GetUserFullInfoById(test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, got, test.shouldReturn)
+		})
+	}
+}
+
+func TestUserRepository_UpdateUser(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(userId int64, update *entity.UserUpdate)
+
+	table := []struct {
+		name          string
+		userId        int64
+		update        *entity.UserUpdate
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			update: &entity.UserUpdate{
+				Email:    "test",
+				Password: "test",
+				Role:     entity.UserRole,
+				Name:     "test",
+				Surname:  "test",
+			},
+			mockBehaviour: func(userId int64, update *entity.UserUpdate) {
+				rowUser := sqlmock.NewRows([]string{"id", "email", "name", "surname", "role", "created_at"}).
+					AddRow(int64(1), "testOld", "testOld", "testOld", entity.UserRole, time.Unix(0, 1))
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rowUser)
+				mock.ExpectExec("UPDATE users SET").
+					WithArgs(update.Email, update.Password, update.Role, update.Name, update.Surname, userId).
+					WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			shouldFail: false,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			r := NewUserRepository(db)
+			test.mockBehaviour(test.userId, test.update)
+
+			err = r.UpdateUser(test.userId, test.update)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+
+}
+
+func TestUserRepository_DeleteUser(t *testing.T) {
+	db, mock, err := sqlmock.Newx()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	type mockBehaviour func(userId int64)
+
+	table := []struct {
+		name          string
+		userId        int64
+		mockBehaviour mockBehaviour
+		shouldFail    bool
+	}{
+		{
+			name:   "Ok",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rowUser := sqlmock.NewRows([]string{"id"}).
+					AddRow(int64(1))
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rowUser)
+				mock.ExpectBegin()
+				mock.ExpectExec("DELETE FROM partnerships").
+					WithArgs(userId).
+					WillReturnResult(sqlmock.NewResult(0, 2))
+				mock.ExpectExec("DELETE FROM workouts").
+					WithArgs(userId).
+					WillReturnResult(sqlmock.NewResult(0, 2))
+				mock.ExpectExec("DELETE FROM users").
+					WithArgs(userId).
+					WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectCommit()
+			},
+			shouldFail: false,
+		},
+		{
+			name:   "Rollback",
+			userId: 1,
+			mockBehaviour: func(userId int64) {
+				rowUser := sqlmock.NewRows([]string{"id"}).
+					AddRow(int64(1))
+				mock.ExpectQuery("SELECT (.+) FROM users").
+					WithArgs(userId).WillReturnRows(rowUser)
+				mock.ExpectBegin()
+				mock.ExpectExec("DELETE FROM partnerships").
+					WithArgs(userId).
+					WillReturnResult(sqlmock.NewResult(0, 2))
+				mock.ExpectExec("DELETE FROM workouts").
+					WithArgs(userId).
+					WillReturnError(errors.New("internal error"))
+				mock.ExpectRollback()
+			},
+			shouldFail: true,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			r := NewUserRepository(db)
+			test.mockBehaviour(test.userId)
+
+			err := r.DeleteUser(test.userId)
+			if test.shouldFail {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
