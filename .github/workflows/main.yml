@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  REGISTRY: "registry.digitalocean.com/quizbot"
+  REGISTRY: "registry.digitalocean.com/hakeyn-registry"
   IMAGE_NAME: "fitness-api-image"
   CONTAINER_NAME: "fitness-api-container"
 
