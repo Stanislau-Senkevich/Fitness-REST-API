@@ -8,3 +8,6 @@ migrate-down:
 
 migrate-drop:
 	migrate -path ./dbschema -database postgres://postgres:qwerty123@0.0.0.0:5433/postgres?sslmode=disable drop
+
+lint:
+	golangci-lint --config .golangci.yml run ./... --deadline=2m --timeout=2m

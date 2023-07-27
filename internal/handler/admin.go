@@ -82,7 +82,7 @@ func (h *Handler) createUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"id": 1,
+		"id": id,
 	})
 }
 

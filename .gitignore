@@ -2,3 +2,4 @@
 archive
 .bin
 .env
+.database

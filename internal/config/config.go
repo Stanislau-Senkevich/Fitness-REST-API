@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/spf13/viper"
-	"github.com/subosito/gotenv"
 )
 
 type Config struct {
@@ -43,9 +42,9 @@ func InitConfig() (*Config, error) {
 }
 
 func parseEnv(cfg *Config) error {
-	if err := gotenv.Load(); err != nil {
-		return err
-	}
+	//if err := gotenv.Load(); err != nil {
+	//	return err
+	//}
 
 	if err := viper.BindEnv("postgres_password"); err != nil {
 		return err
