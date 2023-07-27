@@ -99,7 +99,7 @@ func (h *Handler) updateUser(c *gin.Context) {
 		return
 	}
 
-	err = h.initUpdateUser(userId, &update)
+	err = h.services.InitUpdateUser(userId, &update)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
@@ -128,37 +128,11 @@ func (h *Handler) deleteUser(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (h *Handler) initUpdateUser(userId int64, update *entity.UserUpdate) error {
-	user, err := h.services.GetUserInfoById(userId)
-	if err != nil {
-		return err
-	}
-
-	if update.Email == "" {
-		update.Email = user.Email
-	}
-	if update.Password == "" {
-		update.Password = user.PasswordHash
-	} else {
-		update.Password = h.services.User.GetPasswordHash(update.Password)
-	}
-	if update.Name == "" {
-		update.Name = user.Name
-	}
-	if update.Surname == "" {
-		update.Surname = user.Surname
-	}
-	if update.Role == "" {
-		update.Role = user.Role
-	}
-	return nil
-}
-
 func checkRole(user *entity.User) error {
 	if user.Role == "" {
 		user.Role = entity.UserRole
 	}
-	if user.Role != user.Role && user.Role != entity.TrainerRole {
+	if user.Role != entity.UserRole && user.Role != entity.TrainerRole {
 		return errors.New("invalid role")
 	}
 	return nil

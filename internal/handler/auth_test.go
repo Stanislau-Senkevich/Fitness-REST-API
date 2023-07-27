@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/magiconair/properties/assert"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -40,7 +41,7 @@ func TestHandler_adminSignIn(t *testing.T) {
 			signInInput:          adminSignInInput{Login: "testLogin", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockAdmin, signInInput adminSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'adminSignInInput.Login' Error:Field validation for 'Login' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'adminSignInInput.Login' Error:Field validation for 'Login' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:                 "Not Bindable JSON Password",
@@ -48,7 +49,7 @@ func TestHandler_adminSignIn(t *testing.T) {
 			signInInput:          adminSignInInput{Login: "testLogin", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockAdmin, signInInput adminSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'adminSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'adminSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:                 "Not Bindable JSON Login and Password",
@@ -56,14 +57,15 @@ func TestHandler_adminSignIn(t *testing.T) {
 			signInInput:          adminSignInInput{Login: "testLogin", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockAdmin, signInInput adminSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'adminSignInInput.Login' Error:Field validation for 'Login' failed on the 'required' tag\nKey: 'adminSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'adminSignInInput.Login' Error:Field validation for 'Login' failed on the 'required' tag\nKey: 'adminSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:        "Invalid Login or Password",
 			inputBody:   `{"login":"testLogin", "password":"testPassword"}`,
 			signInInput: adminSignInInput{Login: "testLogin", Password: "testPassword"},
 			mockBehavior: func(r *mockService.MockAdmin, signInInput adminSignInInput) {
-				r.EXPECT().SignIn(signInInput.Login, signInInput.Password).Return("", errors.New("invalid login or password"))
+				r.EXPECT().SignIn(signInInput.Login, signInInput.Password).
+					Return("", errors.New("invalid login or password"))
 			},
 			expectedStatusCode:   401,
 			expectedResponseBody: `{"error":"invalid login or password"}`,
@@ -84,7 +86,7 @@ func TestHandler_adminSignIn(t *testing.T) {
 			r.POST("/admin/sign-in", handler.adminSignIn)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", "/admin/sign-in",
+			req := httptest.NewRequest(http.MethodPost, "/admin/sign-in",
 				bytes.NewBufferString(test.inputBody))
 			r.ServeHTTP(w, req)
 
@@ -121,7 +123,7 @@ func TestHandler_signIn(t *testing.T) {
 			signInInput:          userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockUser, signInInput userSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'userSignInInput.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'userSignInInput.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:                 "Not Bindable JSON Password",
@@ -129,7 +131,7 @@ func TestHandler_signIn(t *testing.T) {
 			signInInput:          userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockUser, signInInput userSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'userSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'userSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:                 "Not Bindable JSON Email and Password",
@@ -137,14 +139,15 @@ func TestHandler_signIn(t *testing.T) {
 			signInInput:          userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockUser, signInInput userSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'userSignInInput.Email' Error:Field validation for 'Email' failed on the 'required' tag\nKey: 'userSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'userSignInInput.Email' Error:Field validation for 'Email' failed on the 'required' tag\nKey: 'userSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:        "Invalid Email or Password",
 			inputBody:   `{"email":"testEmail", "password":"testPassword"}`,
 			signInInput: userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior: func(r *mockService.MockUser, signInInput userSignInInput) {
-				r.EXPECT().SignIn(signInInput.Email, signInInput.Password, entity.UserRole).Return("", errors.New("invalid email or password"))
+				r.EXPECT().SignIn(signInInput.Email, signInInput.Password, entity.UserRole).
+					Return("", errors.New("invalid email or password"))
 			},
 			expectedStatusCode:   401,
 			expectedResponseBody: `{"error":"invalid email or password"}`,
@@ -165,7 +168,7 @@ func TestHandler_signIn(t *testing.T) {
 			r.POST("/sign-in", handler.signIn)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", "/sign-in",
+			req := httptest.NewRequest(http.MethodPost, "/sign-in",
 				bytes.NewBufferString(test.inputBody))
 			r.ServeHTTP(w, req)
 
@@ -191,7 +194,8 @@ func TestHandler_trainerSignIn(t *testing.T) {
 			inputBody:   `{"email":"testEmail", "password":"testPassword"}`,
 			signInInput: userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior: func(r *mockService.MockUser, signInInput userSignInInput) {
-				r.EXPECT().SignIn(signInInput.Email, signInInput.Password, entity.TrainerRole).Return("token", nil)
+				r.EXPECT().SignIn(signInInput.Email, signInInput.Password, entity.TrainerRole).
+					Return("token", nil)
 			},
 			expectedStatusCode:   200,
 			expectedResponseBody: `{"token":"token"}`,
@@ -202,7 +206,7 @@ func TestHandler_trainerSignIn(t *testing.T) {
 			signInInput:          userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockUser, signInInput userSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'userSignInInput.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'userSignInInput.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:                 "Not Bindable JSON Password",
@@ -210,7 +214,7 @@ func TestHandler_trainerSignIn(t *testing.T) {
 			signInInput:          userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockUser, signInInput userSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'userSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'userSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:                 "Not Bindable JSON Email and Password",
@@ -218,14 +222,15 @@ func TestHandler_trainerSignIn(t *testing.T) {
 			signInInput:          userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior:         func(r *mockService.MockUser, signInInput userSignInInput) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'userSignInInput.Email' Error:Field validation for 'Email' failed on the 'required' tag\nKey: 'userSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'userSignInInput.Email' Error:Field validation for 'Email' failed on the 'required' tag\nKey: 'userSignInInput.Password' Error:Field validation for 'Password' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:        "Invalid Email or Password",
 			inputBody:   `{"email":"testEmail", "password":"testPassword"}`,
 			signInInput: userSignInInput{Email: "testEmail", Password: "testPassword"},
 			mockBehavior: func(r *mockService.MockUser, signInInput userSignInInput) {
-				r.EXPECT().SignIn(signInInput.Email, signInInput.Password, entity.TrainerRole).Return("", errors.New("invalid email or password"))
+				r.EXPECT().SignIn(signInInput.Email, signInInput.Password, entity.TrainerRole).
+					Return("", errors.New("invalid email or password"))
 			},
 			expectedStatusCode:   401,
 			expectedResponseBody: `{"error":"invalid email or password"}`,
@@ -246,7 +251,7 @@ func TestHandler_trainerSignIn(t *testing.T) {
 			r.POST("/sign-in", handler.trainerSignIn)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", "/sign-in",
+			req := httptest.NewRequest(http.MethodPost, "/sign-in",
 				bytes.NewBufferString(test.inputBody))
 			r.ServeHTTP(w, req)
 
@@ -269,8 +274,13 @@ func TestHandler_signUp(t *testing.T) {
 	}{
 		{
 			name:      "Ok",
-			inputBody: `{"email":"testEmail", "password":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser: entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior: func(r *mockService.MockUser, inputUser entity.User) {
 				r.EXPECT().SignUp(&inputUser).Return(int64(1), nil)
 			},
@@ -278,41 +288,66 @@ func TestHandler_signUp(t *testing.T) {
 			expectedResponseBody: `{"id":1}`,
 		},
 		{
-			name:                 "Invalid email JSON",
-			inputBody:            `{"emailA":"testEmail", "password":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser:            entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			name:      "Invalid email JSON",
+			inputBody: `{"emailA":"testEmail", "password_hash":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior:         func(r *mockService.MockUser, inputUser entity.User) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`, //nolint
 		},
 		{
-			name:                 "Invalid password JSON",
-			inputBody:            `{"email":"testEmail", "passwordA":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser:            entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			name:      "Invalid password JSON",
+			inputBody: `{"email":"testEmail", "passwordA":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior:         func(r *mockService.MockUser, inputUser entity.User) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'User.PasswordHash' Error:Field validation for 'PasswordHash' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'User.PasswordHash' Error:Field validation for 'PasswordHash' failed on the 'required' tag"}`, //nolint
 		},
 		{
-			name:                 "Invalid name JSON",
-			inputBody:            `{"email":"testEmail", "password":"testPassword", "nameA":"testName", "surname":"testSurname"}`,
-			inputUser:            entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			name:      "Invalid name JSON",
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "nameA":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior:         func(r *mockService.MockUser, inputUser entity.User) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'User.Name' Error:Field validation for 'Name' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'User.Name' Error:Field validation for 'Name' failed on the 'required' tag"}`, //nolint
 		},
 		{
-			name:                 "Invalid surname JSON",
-			inputBody:            `{"email":"testEmail", "password":"testPassword", "name":"testName", "surnameA":"testSurname"}`,
-			inputUser:            entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			name:      "Invalid surname JSON",
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "name":"testName", "surnameA":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior:         func(r *mockService.MockUser, inputUser entity.User) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'User.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'User.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:      "Internal Server Error",
-			inputBody: `{"email":"testEmail", "password":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser: entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior: func(r *mockService.MockUser, inputUser entity.User) {
 				r.EXPECT().SignUp(&inputUser).Return(int64(0), errors.New("internal error"))
 			},
@@ -321,8 +356,13 @@ func TestHandler_signUp(t *testing.T) {
 		},
 		{
 			name:      "Email has already reserved",
-			inputBody: `{"email":"testEmail", "password":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser: entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior: func(r *mockService.MockUser, inputUser entity.User) {
 				r.EXPECT().SignUp(&inputUser).Return(int64(-1), errors.New("reserved email"))
 			},
@@ -345,14 +385,13 @@ func TestHandler_signUp(t *testing.T) {
 			r.POST("/sign-up", handler.signUp)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", "/sign-up",
+			req := httptest.NewRequest(http.MethodPost, "/sign-up",
 				bytes.NewBufferString(test.inputBody))
 
 			r.ServeHTTP(w, req)
 
 			assert.Equal(t, w.Code, test.expectedStatusCode)
 			assert.Equal(t, w.Body.String(), test.expectedResponseBody)
-
 		})
 	}
 }

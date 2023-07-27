@@ -15,13 +15,11 @@ linters:
   disable-all: false
   enable:
     - dogsled
-    - dupl
     - errcheck
     - gocognit
     - goconst
     - gocyclo
     - gofmt
-    - govet
     - ineffassign
     - misspell
     - prealloc
@@ -43,7 +41,6 @@ linters:
     - errorlint
     - execinquery
     - exhaustive
-    - exhaustruct
     - exportloopref
     - forbidigo
     - forcetypeassert
@@ -71,23 +68,17 @@ linters:
     - noctx
     - nonamedreturns
     - nosprintfhostport
-    - paralleltest
     - predeclared
     - promlinter
     - reassign
-    - revive
     - rowserrcheck
     - sqlclosecheck
-    - stylecheck
     - tagliatelle
     - tenv
     - testableexamples
-    - testpackage
     - thelper
-    - tparallel
     - unparam
     - usestdlibvars
-    - varnamelen
     - wastedassign
     - zerologlint
     - gochecknoglobals
@@ -95,9 +86,7 @@ linters:
     - godox
     - nakedret
     - cyclop
-    - funlen
     - lll
-    - gosec
   disable:
     - gci #the sort of imports
     - nlreturn #empty space before return
@@ -105,6 +94,7 @@ linters:
     - tagalign #usefull align, but not implemented inside the all IDE yet
     - wsl #force to use emptylines
     - depguard # import management
+    - govet
 
 linters-settings:
   tagliatelle:

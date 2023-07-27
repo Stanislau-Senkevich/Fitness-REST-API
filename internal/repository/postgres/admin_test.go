@@ -9,6 +9,7 @@ import (
 )
 
 func TestAdminRepository_Authorize(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -64,5 +65,4 @@ func TestAdminRepository_Authorize(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	}
-
 }

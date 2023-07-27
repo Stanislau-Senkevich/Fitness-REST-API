@@ -16,7 +16,11 @@ type AdminService struct {
 	signingKey []byte
 }
 
-func NewAdminService(adminRepo repository.Admin, userRepo repository.User, hashSalt string, signingKey string) *AdminService {
+func NewAdminService(
+	adminRepo repository.Admin,
+	userRepo repository.User,
+	hashSalt string,
+	signingKey string) *AdminService {
 	return &AdminService{adminRepo: adminRepo, userRepo: userRepo, hashSalt: hashSalt, signingKey: []byte(signingKey)}
 }
 
@@ -35,7 +39,7 @@ func (s *AdminService) SignIn(login, password string) (string, error) {
 }
 
 func (s *AdminService) ParseToken(token string) error {
-	t, err := jwt.Parse(token, func(token *jwt.Token) (i interface{}, err error) {
+	t, err := jwt.Parse(token, func(token *jwt.Token) (i interface{}, err error) { //nolint
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}

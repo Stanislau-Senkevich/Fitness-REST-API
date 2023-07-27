@@ -31,7 +31,6 @@ func (h *Handler) initAuthRoutes(router *gin.Engine) {
 		auth.POST("/sign-in", h.signIn)
 		auth.POST("/sign-up", h.signUp)
 	}
-
 }
 
 func (h *Handler) initAdminRoutes(router *gin.Engine) {

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/magiconair/properties/assert"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -99,7 +100,7 @@ func TestHandler_adminIdentity(t *testing.T) {
 			r.GET("/identity", handler.adminIdentity)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/identity", nil)
+			req := httptest.NewRequest(http.MethodGet, "/identity", nil)
 			req.Header.Set(test.headerName, test.headerValue)
 
 			r.ServeHTTP(w, req)
@@ -203,7 +204,7 @@ func TestHandler_userIdentity(t *testing.T) {
 			})
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/identity", nil)
+			req := httptest.NewRequest(http.MethodGet, "/identity", nil)
 			req.Header.Set(test.headerName, test.headerValue)
 
 			r.ServeHTTP(w, req)
@@ -307,7 +308,7 @@ func TestHandler_trainerIdentity(t *testing.T) {
 			})
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/identity", nil)
+			req := httptest.NewRequest(http.MethodGet, "/identity", nil)
 			req.Header.Set(test.headerName, test.headerValue)
 
 			r.ServeHTTP(w, req)

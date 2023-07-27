@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 )
 
 type UserRepository struct {
@@ -47,9 +48,14 @@ func (r *UserRepository) CreateUser(user *entity.User, role entity.Role) (int64,
 		return -1, errors.New("email has already reserved")
 	}
 
-	query := fmt.Sprintf("INSERT INTO %s (email, password_hash, role, name, surname) values ($1, $2, '%s', $3, $4) RETURNING id",
+	query := fmt.Sprintf("INSERT INTO %s (email, password_hash, role, name, surname)"+
+		" values ($1, $2, '%s', $3, $4) RETURNING id",
 		userTable, role)
 	row := r.db.QueryRow(query, user.Email, user.PasswordHash, user.Name, user.Surname)
+
+	logrus.Debugf("creating user query: %s\nargs: %s, %s, %s, %s",
+		query, user.Email, user.PasswordHash, user.Name, user.Surname)
+
 	if err := row.Scan(&id); err != nil {
 		return 0, err
 	}
@@ -65,13 +71,13 @@ func (r *UserRepository) HasEmail(email string) bool {
 
 func (r *UserRepository) GetUserInfoById(id int64) (*entity.User, error) {
 	var user entity.User
-	query := fmt.Sprintf("SELECT id, email, password_hash, name, surname, role, created_at FROM %s WHERE id = $1", userTable)
+	query := fmt.Sprintf("SELECT id, email, password_hash, name, surname, role, created_at "+
+		"FROM %s WHERE id = $1", userTable)
 	err := r.db.Get(&user, query, id)
 	return &user, err
 }
 
 func (r *UserRepository) CreateWorkoutAsUser(workout *entity.Workout) (int64, error) {
-
 	if workout.TrainerId.Int64 > 0 && !r.IsTrainer(workout.TrainerId.Int64) {
 		return -1, errors.New("can't set common user as a trainer")
 	}
@@ -83,7 +89,8 @@ func (r *UserRepository) CreateWorkoutAsUser(workout *entity.Workout) (int64, er
 
 	var id int64
 
-	addQuery := fmt.Sprintf("INSERT INTO %s (title, user_id, trainer_id, description, date) values ($1, $2, $3, $4, $5) RETURNING id", workoutsTable)
+	addQuery := fmt.Sprintf("INSERT INTO %s (title, user_id, trainer_id, description, date) "+
+		"values ($1, $2, $3, $4, $5) RETURNING id", workoutsTable)
 	row := tx.QueryRow(addQuery, workout.Title, workout.UserId, workout.TrainerId, workout.Description, workout.Date)
 	if err = row.Scan(&id); err != nil {
 		_ = tx.Rollback()
@@ -134,7 +141,6 @@ func (r *UserRepository) GetWorkoutById(workoutId, userId int64) (*entity.Workou
 }
 
 func (r *UserRepository) UpdateWorkout(workoutId, userId int64, update *entity.UpdateWorkout) error {
-
 	err := r.CheckAccessToWorkout(workoutId, userId)
 	if err != nil {
 		return err
@@ -148,7 +154,7 @@ func (r *UserRepository) UpdateWorkout(workoutId, userId int64, update *entity.U
 	query := fmt.Sprintf(querySample, workoutsTable, "title", "description", "date")
 	_, err = tx.Exec(query, update.Title, update.Description, update.Date, workoutId)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return tx.Commit()
@@ -220,7 +226,8 @@ func (r *UserRepository) SendRequestToTrainer(trainerId, userId int64) (int64, e
 	if p.Status == "" {
 		var id int64
 		status := "'" + entity.StatusRequest + "'"
-		query := fmt.Sprintf("INSERT INTO %s (trainer_id, user_id, status) values ($1, $2, %s) RETURNING id", partnershipsTable, status)
+		query := fmt.Sprintf("INSERT INTO %s (trainer_id, user_id, status) values "+
+			"($1, $2, %s) RETURNING id", partnershipsTable, status)
 		row := r.db.QueryRow(query, trainerId, userId)
 		err := row.Scan(&id)
 		return id, err
@@ -370,7 +377,6 @@ func (r *UserRepository) GetTrainerRequestById(trainerId, requestId int64) (*ent
 }
 
 func (r *UserRepository) InitPartnershipWithUser(trainerId, userId int64) (int64, error) {
-
 	if !r.IsUser(userId) {
 		return -1, errors.New("invalid userId")
 	}
@@ -561,22 +567,25 @@ func (r *UserRepository) DeleteUser(userId int64) error {
 		return errors.New("no user to delete")
 	}
 	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
 	query := fmt.Sprintf("DELETE FROM %s WHERE user_id = $1", partnershipsTable)
 	_, err = tx.Exec(query, userId)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	query = fmt.Sprintf("DELETE FROM %s WHERE user_id = $1", workoutsTable)
 	_, err = tx.Exec(query, userId)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	query = fmt.Sprintf("DELETE FROM %s WHERE id = $1", userTable)
 	_, err = tx.Exec(query, userId)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	return tx.Commit()

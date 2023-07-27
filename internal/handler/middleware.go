@@ -32,7 +32,6 @@ func validHeader(c *gin.Context) (string, bool) {
 }
 
 func (h *Handler) adminIdentity(c *gin.Context) {
-
 	token, ok := validHeader(c)
 	if !ok {
 		return

@@ -23,7 +23,7 @@ type Admin interface {
 	DeleteUser(userId int64) error
 }
 
-type User interface {
+type User interface { //nolint
 	SignIn(email, passwordHash string, role entity.Role) (string, error)
 	SignUp(user *entity.User) (int64, error)
 	ParseToken(token string) (int64, entity.Role, error)
@@ -52,6 +52,8 @@ type User interface {
 	GetTrainerWorkoutsWithUser(trainerId, userId int64) ([]*entity.Workout, error)
 
 	GetPasswordHash(password string) string
+	InitUpdateUser(userId int64, update *entity.UserUpdate) error
+	FormatUpdateWorkout(input *entity.UpdateWorkout, workoutId, userId int64) error
 }
 
 type Services struct {

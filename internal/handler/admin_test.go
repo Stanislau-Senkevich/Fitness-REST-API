@@ -11,12 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/magiconair/properties/assert"
+	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func TestHandler_getAllUsersFullInfo(t *testing.T) {
+
 	type mockBehaviour func(r *mockService.MockAdmin)
 
 	table := []struct {
@@ -55,7 +56,7 @@ func TestHandler_getAllUsersFullInfo(t *testing.T) {
 					}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":1,"email":"test","role":"user","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":1,"user_id":1,"trainer_id":3,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":5,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":1,"title":"test","user_id":1,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test","user_id":1,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]},{"id":2,"email":"test","role":"user","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":3,"user_id":2,"trainer_id":10,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":4,"user_id":2,"trainer_id":8,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":3,"title":"test","user_id":2,"trainer_id":{"Int64":8,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":4,"title":"test","user_id":2,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]}]`,
+			expectedResponseBody: `[{"id":1,"email":"test","role":"user","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":1,"user_id":1,"trainer_id":3,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":5,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":1,"title":"test","user_id":1,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test","user_id":1,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]},{"id":2,"email":"test","role":"user","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":3,"user_id":2,"trainer_id":10,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":4,"user_id":2,"trainer_id":8,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":3,"title":"test","user_id":2,"trainer_id":{"Int64":8,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":4,"title":"test","user_id":2,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]}]`, //nolint
 		},
 		{
 			name: "No users",
@@ -89,7 +90,7 @@ func TestHandler_getAllUsersFullInfo(t *testing.T) {
 			r.GET("/user", handler.getAllUsersFullInfo)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/user", nil)
+			req := httptest.NewRequest(http.MethodGet, "/user", nil)
 
 			r.ServeHTTP(w, req)
 
@@ -100,6 +101,7 @@ func TestHandler_getAllUsersFullInfo(t *testing.T) {
 }
 
 func TestHandler_getTrainersInfo(t *testing.T) {
+
 	type mockBehaviour func(r *mockService.MockAdmin)
 
 	table := []struct {
@@ -138,7 +140,7 @@ func TestHandler_getTrainersInfo(t *testing.T) {
 					}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":1,"email":"test","role":"trainer","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":1,"user_id":10,"trainer_id":1,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":11,"trainer_id":1,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":1,"title":"test","user_id":10,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test","user_id":11,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"}]},{"id":2,"email":"test","role":"trainer","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":3,"user_id":22,"trainer_id":2,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":4,"user_id":20,"trainer_id":2,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":3,"title":"test","user_id":22,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":4,"title":"test","user_id":20,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"}]}]`,
+			expectedResponseBody: `[{"id":1,"email":"test","role":"trainer","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":1,"user_id":10,"trainer_id":1,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":11,"trainer_id":1,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":1,"title":"test","user_id":10,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test","user_id":11,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"}]},{"id":2,"email":"test","role":"trainer","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":3,"user_id":22,"trainer_id":2,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":4,"user_id":20,"trainer_id":2,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":3,"title":"test","user_id":22,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":4,"title":"test","user_id":20,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"}]}]`, //nolint
 		},
 		{
 			name: "No users",
@@ -172,7 +174,7 @@ func TestHandler_getTrainersInfo(t *testing.T) {
 			r.GET("/user", handler.getTrainersInfo)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/user", nil)
+			req := httptest.NewRequest(http.MethodGet, "/user", nil)
 
 			r.ServeHTTP(w, req)
 
@@ -183,6 +185,7 @@ func TestHandler_getTrainersInfo(t *testing.T) {
 }
 
 func TestHandler_getUserFullInfoById(t *testing.T) {
+
 	type mockBehaviour func(r *mockService.MockAdmin, userId int64)
 
 	table := []struct {
@@ -210,7 +213,7 @@ func TestHandler_getUserFullInfoById(t *testing.T) {
 					}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `{"id":1,"email":"test","role":"user","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":1,"user_id":1,"trainer_id":3,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":5,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":1,"title":"test","user_id":1,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test","user_id":1,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]}`,
+			expectedResponseBody: `{"id":1,"email":"test","role":"user","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":1,"user_id":1,"trainer_id":3,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":5,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":1,"title":"test","user_id":1,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test","user_id":1,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]}`, //nolint
 		},
 		{
 			name:                 "Invalid id param",
@@ -245,7 +248,7 @@ func TestHandler_getUserFullInfoById(t *testing.T) {
 			r.GET("/user/:id", handler.getUserFullInfoByID)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", fmt.Sprintf("/user/%d", test.userId), nil)
+			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/user/%d", test.userId), nil)
 
 			r.ServeHTTP(w, req)
 
@@ -256,6 +259,7 @@ func TestHandler_getUserFullInfoById(t *testing.T) {
 }
 
 func TestHandler_createUser(t *testing.T) {
+
 	type mockBehavior func(r *mockService.MockAdmin, inputUser entity.User)
 
 	table := []struct {
@@ -268,8 +272,14 @@ func TestHandler_createUser(t *testing.T) {
 	}{
 		{
 			name:      "Ok User",
-			inputBody: `{"email":"testEmail", "password":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser: entity.User{Email: "testEmail", PasswordHash: "testPassword", Role: entity.UserRole, Name: "testName", Surname: "testSurname"},
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Role:         entity.UserRole,
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior: func(r *mockService.MockAdmin, inputUser entity.User) {
 				r.EXPECT().CreateUser(&inputUser).Return(int64(1), nil)
 			},
@@ -278,8 +288,14 @@ func TestHandler_createUser(t *testing.T) {
 		},
 		{
 			name:      "Ok Trainer",
-			inputBody: `{"email":"testEmail", "password":"testPassword", "role":"trainer", "name":"testName", "surname":"testSurname"}`,
-			inputUser: entity.User{Email: "testEmail", PasswordHash: "testPassword", Role: entity.TrainerRole, Name: "testName", Surname: "testSurname"},
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "role":"trainer", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Role:         entity.TrainerRole,
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior: func(r *mockService.MockAdmin, inputUser entity.User) {
 				r.EXPECT().CreateUser(&inputUser).Return(int64(1), nil)
 			},
@@ -287,41 +303,69 @@ func TestHandler_createUser(t *testing.T) {
 			expectedResponseBody: `{"id":1}`,
 		},
 		{
-			name:                 "Invalid email JSON",
-			inputBody:            `{"emailA":"testEmail", "password":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser:            entity.User{Email: "testEmail", PasswordHash: "testPassword", Role: entity.UserRole, Name: "testName", Surname: "testSurname"},
+			name:      "Invalid email JSON",
+			inputBody: `{"emailA":"testEmail", "password_hash":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Role:         entity.UserRole,
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior:         func(r *mockService.MockAdmin, inputUser entity.User) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'User.Email' Error:Field validation for 'Email' failed on the 'required' tag"}`, //nolint
 		},
 		{
-			name:                 "Invalid password JSON",
-			inputBody:            `{"email":"testEmail", "passwordA":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser:            entity.User{Email: "testEmail", PasswordHash: "testPassword", Role: entity.UserRole, Name: "testName", Surname: "testSurname"},
+			name:      "Invalid password JSON",
+			inputBody: `{"email":"testEmail", "passwordA":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Role:         entity.UserRole,
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior:         func(r *mockService.MockAdmin, inputUser entity.User) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'User.PasswordHash' Error:Field validation for 'PasswordHash' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'User.PasswordHash' Error:Field validation for 'PasswordHash' failed on the 'required' tag"}`, //nolint
 		},
 		{
-			name:                 "Invalid name JSON",
-			inputBody:            `{"email":"testEmail", "password":"testPassword", "nameA":"testName", "surname":"testSurname"}`,
-			inputUser:            entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			name:      "Invalid name JSON",
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "nameA":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior:         func(r *mockService.MockAdmin, inputUser entity.User) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'User.Name' Error:Field validation for 'Name' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'User.Name' Error:Field validation for 'Name' failed on the 'required' tag"}`, //nolint
 		},
 		{
-			name:                 "Invalid surname JSON",
-			inputBody:            `{"email":"testEmail", "password":"testPassword", "name":"testName", "surnameA":"testSurname"}`,
-			inputUser:            entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
+			name:      "Invalid surname JSON",
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "name":"testName", "surnameA":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior:         func(r *mockService.MockAdmin, inputUser entity.User) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'User.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'User.Surname' Error:Field validation for 'Surname' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:      "Internal Server Error",
-			inputBody: `{"email":"testEmail", "password":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser: entity.User{Email: "testEmail", PasswordHash: "testPassword", Role: entity.UserRole, Name: "testName", Surname: "testSurname"},
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Role:         entity.UserRole,
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior: func(r *mockService.MockAdmin, inputUser entity.User) {
 				r.EXPECT().CreateUser(&inputUser).Return(int64(0), errors.New("internal error"))
 			},
@@ -330,8 +374,14 @@ func TestHandler_createUser(t *testing.T) {
 		},
 		{
 			name:      "Email has already reserved",
-			inputBody: `{"email":"testEmail", "password":"testPassword", "name":"testName", "surname":"testSurname"}`,
-			inputUser: entity.User{Email: "testEmail", PasswordHash: "testPassword", Role: entity.UserRole, Name: "testName", Surname: "testSurname"},
+			inputBody: `{"email":"testEmail", "password_hash":"testPassword", "name":"testName", "surname":"testSurname"}`, //nolint
+			inputUser: entity.User{
+				Email:        "testEmail",
+				PasswordHash: "testPassword",
+				Role:         entity.UserRole,
+				Name:         "testName",
+				Surname:      "testSurname",
+			},
 			mockBehavior: func(r *mockService.MockAdmin, inputUser entity.User) {
 				r.EXPECT().CreateUser(&inputUser).Return(int64(-1), errors.New("reserved email"))
 			},
@@ -354,19 +404,19 @@ func TestHandler_createUser(t *testing.T) {
 			r.POST("/user", handler.createUser)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", "/user",
+			req := httptest.NewRequest(http.MethodPost, "/user",
 				bytes.NewBufferString(test.inputBody))
 
 			r.ServeHTTP(w, req)
 
 			assert.Equal(t, w.Code, test.expectedStatusCode)
 			assert.Equal(t, w.Body.String(), test.expectedResponseBody)
-
 		})
 	}
 }
 
 func TestHandler_updateUser(t *testing.T) {
+
 	type mockBehaviour func(r *mockService.MockAdmin, u *mockService.MockUser, userId int64)
 
 	table := []struct {
@@ -382,24 +432,13 @@ func TestHandler_updateUser(t *testing.T) {
 			userId:    1,
 			inputBody: `{"email":"testNew", "password":"qwerty123", "name":"testNew", "surname":"testNew"}`,
 			mockBehaviour: func(r *mockService.MockAdmin, u *mockService.MockUser, userId int64) {
-				user := &entity.User{
-					Id:           1,
-					Email:        "testOld",
-					PasswordHash: "afcsdv",
-					Role:         entity.UserRole,
-					Name:         "testOld",
-					Surname:      "testOld",
-					CreatedAt:    time.Unix(0, 1),
-				}
 				update := &entity.UserUpdate{
 					Email:    "testNew",
-					Password: "5cec175b165e3d5e62c9e13ce848ef6feac81bff",
-					Role:     entity.UserRole,
+					Password: "qwerty123",
 					Name:     "testNew",
 					Surname:  "testNew",
 				}
-				u.EXPECT().GetUserInfoById(userId).Return(user, nil)
-				u.EXPECT().GetPasswordHash("qwerty123").Return("5cec175b165e3d5e62c9e13ce848ef6feac81bff")
+				u.EXPECT().InitUpdateUser(userId, update).Return(nil)
 				r.EXPECT().UpdateUser(userId, update).Return(nil)
 			},
 			expectedStatusCode: 200,
@@ -421,7 +460,7 @@ func TestHandler_updateUser(t *testing.T) {
 			r.PUT("/user/:id", handler.updateUser)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("PUT", fmt.Sprintf("/user/%d", test.userId),
+			req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/user/%d", test.userId),
 				bytes.NewBufferString(test.inputBody))
 
 			r.ServeHTTP(w, req)
@@ -432,6 +471,7 @@ func TestHandler_updateUser(t *testing.T) {
 }
 
 func TestHandler_deleteUser(t *testing.T) {
+
 	type mockBehaviour func(r *mockService.MockAdmin, userId int64)
 
 	table := []struct {
@@ -478,7 +518,7 @@ func TestHandler_deleteUser(t *testing.T) {
 			r.DELETE("/user/:id", handler.deleteUser)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("DELETE", fmt.Sprintf("/user/%d", test.userId), nil)
+			req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/user/%d", test.userId), nil)
 
 			r.ServeHTTP(w, req)
 

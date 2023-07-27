@@ -7,24 +7,25 @@ import (
 	"Fitness_REST_API/internal/repository/postgres"
 	"Fitness_REST_API/internal/server"
 	"Fitness_REST_API/internal/service"
+	"github.com/sirupsen/logrus"
 	"log"
 )
 
 func main() {
-
+	logrus.SetFormatter(new(logrus.JSONFormatter))
 	cfg, err := config.InitConfig()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatalf("error due reading config: %s", err.Error())
 	}
 
 	db, err := postgres.InitPostgresDB(cfg)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatalf("error due initializing database: %s", err.Error())
 	}
 	defer func() {
 		err = db.Close()
 		if err != nil {
-			log.Panic("error due closing db")
+			logrus.Fatalf("error due closing db: %s", err.Error())
 		}
 	}()
 
@@ -35,6 +36,6 @@ func main() {
 
 	err = srv.Run(cfg.Port, handlers.InitRoutes())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error due running server: %s", err.Error())
 	}
 }

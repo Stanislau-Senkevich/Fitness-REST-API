@@ -1,6 +1,5 @@
 port: "8001"
 
-
 postgres_config:
   postgres_host: "localhost"
   postgres_port: "5433"

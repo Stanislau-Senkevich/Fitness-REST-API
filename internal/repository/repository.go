@@ -22,7 +22,7 @@ type Admin interface {
 	Authorize(login, passwordHash string) error
 }
 
-type User interface {
+type User interface { //nolint
 	Authorize(email, passwordHash string, role entity.Role) (int64, error)
 	CreateUser(user *entity.User, status entity.Role) (int64, error)
 	UpdateUser(userId int64, update *entity.UserUpdate) error

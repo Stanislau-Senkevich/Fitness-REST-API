@@ -12,6 +12,7 @@ import (
 )
 
 func TestUserRepository_Authorize(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -70,10 +71,10 @@ func TestUserRepository_Authorize(t *testing.T) {
 			assert.Equal(t, got, test.shouldReturn)
 		})
 	}
-
 }
 
 func TestUserRepository_IsTrainer(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -131,6 +132,7 @@ func TestUserRepository_IsTrainer(t *testing.T) {
 }
 
 func TestUserRepository_IsUser(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -178,6 +180,7 @@ func TestUserRepository_IsUser(t *testing.T) {
 }
 
 func TestUserRepository_CreateUser(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -207,7 +210,8 @@ func TestUserRepository_CreateUser(t *testing.T) {
 			name:      "Email is reserved",
 			inputUser: entity.User{Email: "testEmail", PasswordHash: "testPassword", Name: "testName", Surname: "testSurname"},
 			mockBehaviour: func() {
-				rowsSelect := sqlmock.NewRows([]string{"id", "email", "password_hash", "name", "surname"}).AddRow(int64(1), "testEmail", "testPassword", "testName", "testSurname")
+				rowsSelect := sqlmock.NewRows([]string{"id", "email", "password_hash", "name", "surname"}).
+					AddRow(int64(1), "testEmail", "testPassword", "testName", "testSurname")
 				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs("testEmail").WillReturnRows(rowsSelect)
 			},
 			shouldFail:   true,
@@ -248,12 +252,12 @@ func TestUserRepository_CreateUser(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, got, test.shouldReturn)
 			}
-
 		})
 	}
 }
 
 func TestUserRepository_HasEmail(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -300,6 +304,7 @@ func TestUserRepository_HasEmail(t *testing.T) {
 }
 
 func TestUserRepository_GetUserInfoById(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -357,6 +362,7 @@ func TestUserRepository_GetUserInfoById(t *testing.T) {
 }
 
 func TestUserRepository_CreateWorkoutAsUser(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -469,6 +475,7 @@ func TestUserRepository_CreateWorkoutAsUser(t *testing.T) {
 }
 
 func TestUserRepository_CheckAccessToWorkout(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -555,6 +562,7 @@ func TestUserRepository_CheckAccessToWorkout(t *testing.T) {
 }
 
 func TestUserRepository_GetAllUserWorkouts(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -581,7 +589,7 @@ func TestUserRepository_GetAllUserWorkouts(t *testing.T) {
 			shouldFail: false,
 			shouldReturn: []*entity.Workout{{
 				Id:          1,
-				TrainerId:   sql.NullInt64{2, true},
+				TrainerId:   sql.NullInt64{Int64: 2, Valid: true},
 				UserId:      1,
 				Title:       "test",
 				Description: "test",
@@ -627,6 +635,7 @@ func TestUserRepository_GetAllUserWorkouts(t *testing.T) {
 }
 
 func TestUserRepository_GetWorkoutById(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -657,7 +666,7 @@ func TestUserRepository_GetWorkoutById(t *testing.T) {
 			shouldFail: false,
 			shouldReturn: &entity.Workout{
 				Id:          1,
-				TrainerId:   sql.NullInt64{2, true},
+				TrainerId:   sql.NullInt64{Int64: 2, Valid: true},
 				UserId:      1,
 				Title:       "test",
 				Description: "test",
@@ -717,6 +726,7 @@ func TestUserRepository_GetWorkoutById(t *testing.T) {
 }
 
 func TestUserRepository_UpdateWorkout(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -820,10 +830,10 @@ func TestUserRepository_UpdateWorkout(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestUserRepository_DeleteWorkout(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -890,6 +900,7 @@ func TestUserRepository_DeleteWorkout(t *testing.T) {
 }
 
 func TestUserRepository_GetAllTrainers(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -955,6 +966,7 @@ func TestUserRepository_GetAllTrainers(t *testing.T) {
 }
 
 func TestUserRepository_GetTrainerById(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1018,6 +1030,7 @@ func TestUserRepository_GetTrainerById(t *testing.T) {
 }
 
 func TestUserRepository_GetUserPartnerships(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1090,6 +1103,7 @@ func TestUserRepository_GetUserPartnerships(t *testing.T) {
 }
 
 func TestUserRepository_GetPartnership(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1111,8 +1125,10 @@ func TestUserRepository_GetPartnership(t *testing.T) {
 			userId:    1,
 			trainerId: 2,
 			mockBehaviour: func(trainerId, userId int64) {
-				rows := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).AddRow(int64(1), int64(1), int64(2), entity.StatusApproved)
-				mock.ExpectQuery("SELECT (.+) FROM partnerships").WithArgs(trainerId, userId).WillReturnRows(rows)
+				rows := sqlmock.NewRows([]string{"id", "user_id", "trainer_id", "status"}).
+					AddRow(int64(1), int64(1), int64(2), entity.StatusApproved)
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnRows(rows)
 			},
 			shouldFail:   false,
 			shouldReturn: &entity.Partnership{Id: 1, UserId: 1, TrainerId: 2, Status: entity.StatusApproved},
@@ -1122,7 +1138,8 @@ func TestUserRepository_GetPartnership(t *testing.T) {
 			userId:    1,
 			trainerId: 2,
 			mockBehaviour: func(trainerId, userId int64) {
-				mock.ExpectQuery("SELECT (.+) FROM partnerships").WithArgs(trainerId, userId).WillReturnError(errors.New("sql: no rows in result set"))
+				mock.ExpectQuery("SELECT (.+) FROM partnerships").
+					WithArgs(trainerId, userId).WillReturnError(errors.New("sql: no rows in result set"))
 			},
 			shouldFail:   true,
 			shouldReturn: &entity.Partnership{},
@@ -1145,6 +1162,7 @@ func TestUserRepository_GetPartnership(t *testing.T) {
 }
 
 func TestUserRepository_SendRequestToTrainer(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1279,6 +1297,7 @@ func TestUserRepository_SendRequestToTrainer(t *testing.T) {
 }
 
 func TestUserRepository_EndPartnershipWithTrainer(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1364,10 +1383,10 @@ func TestUserRepository_EndPartnershipWithTrainer(t *testing.T) {
 			assert.Equal(t, got, test.shouldReturn)
 		})
 	}
-
 }
 
 func TestUserRepository_GetTrainerUsers(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1461,6 +1480,7 @@ func TestUserRepository_GetTrainerUsers(t *testing.T) {
 }
 
 func TestUserRepository_GetTrainerRequests(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1554,6 +1574,7 @@ func TestUserRepository_GetTrainerRequests(t *testing.T) {
 }
 
 func TestUserRepository_GetTrainerUserById(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1660,6 +1681,7 @@ func TestUserRepository_GetTrainerUserById(t *testing.T) {
 }
 
 func TestUserRepository_GetTrainerRequestById(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1755,6 +1777,7 @@ func TestUserRepository_GetTrainerRequestById(t *testing.T) {
 }
 
 func TestUserRepository_InitPartnershipWithUser(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1894,6 +1917,7 @@ func TestUserRepository_InitPartnershipWithUser(t *testing.T) {
 }
 
 func TestUserRepository_EndPartnershipWithUser(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -1986,6 +2010,7 @@ func TestUserRepository_EndPartnershipWithUser(t *testing.T) {
 }
 
 func TestUserRepository_AcceptRequest(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2047,6 +2072,7 @@ func TestUserRepository_AcceptRequest(t *testing.T) {
 }
 
 func TestUserRepository_DenyRequest(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2102,6 +2128,7 @@ func TestUserRepository_DenyRequest(t *testing.T) {
 }
 
 func TestUserRepository_CreateWorkoutAsTrainer(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2190,6 +2217,7 @@ func TestUserRepository_CreateWorkoutAsTrainer(t *testing.T) {
 }
 
 func TestUserRepository_GetTrainerWorkouts(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2218,9 +2246,9 @@ func TestUserRepository_GetTrainerWorkouts(t *testing.T) {
 			},
 			shouldFail: false,
 			shouldReturn: []*entity.Workout{
-				{Id: 1, UserId: 2, TrainerId: sql.NullInt64{1, true}, Title: "test1"},
-				{Id: 2, UserId: 4, TrainerId: sql.NullInt64{1, true}, Title: "test2"},
-				{Id: 3, UserId: 3, TrainerId: sql.NullInt64{1, true}, Title: "test3"},
+				{Id: 1, UserId: 2, TrainerId: sql.NullInt64{Int64: 1, Valid: true}, Title: "test1"},
+				{Id: 2, UserId: 4, TrainerId: sql.NullInt64{Int64: 1, Valid: true}, Title: "test2"},
+				{Id: 3, UserId: 3, TrainerId: sql.NullInt64{Int64: 1, Valid: true}, Title: "test3"},
 			},
 		},
 		{
@@ -2262,6 +2290,7 @@ func TestUserRepository_GetTrainerWorkouts(t *testing.T) {
 }
 
 func TestUserRepository_GetTrainerWorkoutsWithUser(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2292,9 +2321,9 @@ func TestUserRepository_GetTrainerWorkoutsWithUser(t *testing.T) {
 			},
 			shouldFail: false,
 			shouldReturn: []*entity.Workout{
-				{Id: 1, UserId: 2, TrainerId: sql.NullInt64{1, true}, Title: "test1"},
-				{Id: 2, UserId: 2, TrainerId: sql.NullInt64{1, true}, Title: "test2"},
-				{Id: 3, UserId: 2, TrainerId: sql.NullInt64{1, true}, Title: "test3"},
+				{Id: 1, UserId: 2, TrainerId: sql.NullInt64{Int64: 1, Valid: true}, Title: "test1"},
+				{Id: 2, UserId: 2, TrainerId: sql.NullInt64{Int64: 1, Valid: true}, Title: "test2"},
+				{Id: 3, UserId: 2, TrainerId: sql.NullInt64{Int64: 1, Valid: true}, Title: "test3"},
 			},
 		},
 		{
@@ -2336,6 +2365,7 @@ func TestUserRepository_GetTrainerWorkoutsWithUser(t *testing.T) {
 }
 
 func TestUserRepository_GetUsersId(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2410,6 +2440,7 @@ func TestUserRepository_GetUsersId(t *testing.T) {
 }
 
 func TestUserRepository_GetUserFullInfoById(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2512,6 +2543,7 @@ func TestUserRepository_GetUserFullInfoById(t *testing.T) {
 }
 
 func TestUserRepository_UpdateUser(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)
@@ -2562,10 +2594,10 @@ func TestUserRepository_UpdateUser(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestUserRepository_DeleteUser(t *testing.T) {
+
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatal(err)

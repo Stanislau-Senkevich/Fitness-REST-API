@@ -262,6 +262,20 @@ func (mr *MockUserMockRecorder) EndPartnershipWithUser(trainerId, userId interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EndPartnershipWithUser", reflect.TypeOf((*MockUser)(nil).EndPartnershipWithUser), trainerId, userId)
 }
 
+// FormatUpdateWorkout mocks base method.
+func (m *MockUser) FormatUpdateWorkout(input *entity.UpdateWorkout, workoutId, userId int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FormatUpdateWorkout", input, workoutId, userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// FormatUpdateWorkout indicates an expected call of FormatUpdateWorkout.
+func (mr *MockUserMockRecorder) FormatUpdateWorkout(input, workoutId, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FormatUpdateWorkout", reflect.TypeOf((*MockUser)(nil).FormatUpdateWorkout), input, workoutId, userId)
+}
+
 // GetPasswordHash mocks base method.
 func (m *MockUser) GetPasswordHash(password string) string {
 	m.ctrl.T.Helper()
@@ -469,6 +483,20 @@ func (m *MockUser) InitPartnershipWithUser(trainerId, userId int64) (int64, erro
 func (mr *MockUserMockRecorder) InitPartnershipWithUser(trainerId, userId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitPartnershipWithUser", reflect.TypeOf((*MockUser)(nil).InitPartnershipWithUser), trainerId, userId)
+}
+
+// InitUpdateUser mocks base method.
+func (m *MockUser) InitUpdateUser(userId int64, update *entity.UserUpdate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitUpdateUser", userId, update)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InitUpdateUser indicates an expected call of InitUpdateUser.
+func (mr *MockUserMockRecorder) InitUpdateUser(userId, update interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitUpdateUser", reflect.TypeOf((*MockUser)(nil).InitUpdateUser), userId, update)
 }
 
 // ParseToken mocks base method.

@@ -77,6 +77,69 @@ func (h *Handler) getTrainerRequestById(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+func (h *Handler) getTrainerWorkouts(c *gin.Context) {
+	trainerId, err := h.getId(c)
+	if err != nil || trainerId < 1 {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	workouts, err := h.services.GetTrainerWorkouts(trainerId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, workouts)
+}
+
+func (h *Handler) getTrainerWorkoutsWithUser(c *gin.Context) {
+	trainerId, err := h.getId(c)
+	if err != nil || trainerId < 1 {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || userId < 1 {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		return
+	}
+
+	workouts, err := h.services.GetTrainerWorkoutsWithUser(trainerId, userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, workouts)
+}
+
+func (h *Handler) createTrainerWorkout(c *gin.Context) {
+	trainerId, err := h.getId(c)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	var input entity.Workout
+	if err := c.ShouldBindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	err = formatTrainerWorkout(&input, trainerId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	workoutId, err := h.services.User.CreateWorkoutAsTrainer(&input)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"workout_id": workoutId,
+	})
+}
+
 func (h *Handler) initPartnershipWithUser(c *gin.Context) {
 	trainerId, err := h.getId(c)
 	if err != nil || trainerId < 1 {
@@ -101,7 +164,6 @@ func (h *Handler) initPartnershipWithUser(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"partnership_id": pId,
 	})
-
 }
 
 func (h *Handler) endPartnershipWithUser(c *gin.Context) {
@@ -174,71 +236,7 @@ func (h *Handler) denyRequest(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (h *Handler) createTrainerWorkout(c *gin.Context) {
-	trainerId, err := h.getId(c)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
-	}
-
-	var input entity.Workout
-	if err := c.ShouldBindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err)
-		return
-	}
-
-	err = formatTrainerWorkout(&input, trainerId)
-	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err)
-		return
-	}
-
-	workoutId, err := h.services.User.CreateWorkoutAsTrainer(&input)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"workout_id": workoutId,
-	})
-}
-
-func (h *Handler) getTrainerWorkouts(c *gin.Context) {
-	trainerId, err := h.getId(c)
-	if err != nil || trainerId < 1 {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
-	}
-	workouts, err := h.services.GetTrainerWorkouts(trainerId)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, workouts)
-}
-
-func (h *Handler) getTrainerWorkoutsWithUser(c *gin.Context) {
-	trainerId, err := h.getId(c)
-	if err != nil || trainerId < 1 {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
-	}
-	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil || userId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
-		return
-	}
-
-	workouts, err := h.services.GetTrainerWorkoutsWithUser(trainerId, userId)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, workouts)
-}
-
 func formatTrainerWorkout(input *entity.Workout, trainerId int64) error {
-
 	if !input.TrainerId.Valid {
 		input.TrainerId = sql.NullInt64{Int64: trainerId, Valid: true}
 	}

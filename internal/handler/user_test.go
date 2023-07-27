@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/magiconair/properties/assert"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -38,7 +39,7 @@ func TestHandler_getUserInfo(t *testing.T) {
 				}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `{"id":1,"email":"test","password":"test","role":"test","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z"}`,
+			expectedResponseBody: `{"id":1,"email":"test","role":"test","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z"}`, //nolint
 		},
 		{
 			name:                 "Invalid id",
@@ -72,7 +73,7 @@ func TestHandler_getUserInfo(t *testing.T) {
 			r.GET("/user", handler.getUserInfo)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/user", nil)
+			req := httptest.NewRequest(http.MethodGet, "/user", nil)
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Set(userIdCtx, test.userId)
 
@@ -107,7 +108,7 @@ func TestHandler_getUserWorkouts(t *testing.T) {
 					}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":0,"title":"test1","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"description":"test1","date":"0001-01-01T00:00:00Z"},{"id":0,"title":"test2","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]`,
+			expectedResponseBody: `[{"id":0,"title":"test1","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"description":"test1","date":"0001-01-01T00:00:00Z"},{"id":0,"title":"test2","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]`, //nolint
 		},
 		{
 			name:   "Empty workout",
@@ -151,7 +152,7 @@ func TestHandler_getUserWorkouts(t *testing.T) {
 			router.GET("/workout", handler.getUserWorkouts)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/workout", nil)
+			req := httptest.NewRequest(http.MethodGet, "/workout", nil)
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Set(userIdCtx, test.userId)
 			req = req.WithContext(ctx)
@@ -183,7 +184,7 @@ func TestHandler_getWorkoutById(t *testing.T) {
 				r.EXPECT().GetWorkoutById(workoutId, userId).Return(&entity.Workout{Title: "test", Description: "test"}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `{"id":0,"title":"test","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"description":"test","date":"0001-01-01T00:00:00Z"}`,
+			expectedResponseBody: `{"id":0,"title":"test","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"description":"test","date":"0001-01-01T00:00:00Z"}`, //nolint
 		},
 		{
 			name:                 "Invalid WorkoutId",
@@ -227,7 +228,7 @@ func TestHandler_getWorkoutById(t *testing.T) {
 			router.GET("/workout/:id", handler.getWorkoutById)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", fmt.Sprintf("/workout/%d", test.workoutId), nil)
+			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/workout/%d", test.workoutId), nil)
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Set(userIdCtx, test.userId)
 			req = req.WithContext(ctx)
@@ -251,10 +252,11 @@ func TestHandler_getAllTrainers(t *testing.T) {
 		{
 			name: "Ok",
 			mockBehaviour: func(r *mockService.MockUser) {
-				r.EXPECT().GetTrainers().Return([]*entity.User{{Email: "test"}, {Email: "test2"}}, nil)
+				r.EXPECT().GetTrainers().
+					Return([]*entity.User{{Email: "test"}, {Email: "test2"}}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":0,"email":"test","name":"","surname":"","created_at":"0001-01-01T00:00:00Z"},{"id":0,"email":"test2","name":"","surname":"","created_at":"0001-01-01T00:00:00Z"}]`,
+			expectedResponseBody: `[{"id":0,"email":"test","name":"","surname":"","created_at":"0001-01-01T00:00:00Z"},{"id":0,"email":"test2","name":"","surname":"","created_at":"0001-01-01T00:00:00Z"}]`, //nolint
 		},
 		{
 			name: "Internal error",
@@ -280,7 +282,7 @@ func TestHandler_getAllTrainers(t *testing.T) {
 			router.GET("/trainer", handler.getAllTrainers)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/trainer", nil)
+			req := httptest.NewRequest(http.MethodGet, "/trainer", nil)
 
 			router.ServeHTTP(w, req)
 
@@ -340,7 +342,7 @@ func TestHandler_getTrainerById(t *testing.T) {
 			router.GET("/trainer/:id", handler.getTrainerById)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", fmt.Sprintf("/trainer/%d", test.trainerId), nil)
+			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/trainer/%d", test.trainerId), nil)
 
 			router.ServeHTTP(w, req)
 
@@ -363,10 +365,14 @@ func TestHandler_getPartnerships(t *testing.T) {
 			name:   "Ok",
 			userId: 1,
 			mockBehaviour: func(r *mockService.MockUser, userId int64) {
-				r.EXPECT().GetUserPartnerships(userId).Return([]*entity.Partnership{{Id: 1, UserId: 1, TrainerId: 1}, {Id: 2, UserId: 1, TrainerId: 2}}, nil)
+				r.EXPECT().GetUserPartnerships(userId).
+					Return([]*entity.Partnership{
+						{Id: 1, UserId: 1, TrainerId: 1},
+						{Id: 2, UserId: 1, TrainerId: 2}},
+						nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":1,"user_id":1,"trainer_id":1,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":2,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}]`,
+			expectedResponseBody: `[{"id":1,"user_id":1,"trainer_id":1,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":2,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}]`, //nolint
 		},
 		{
 			name:   "No partnerships",
@@ -409,7 +415,7 @@ func TestHandler_getPartnerships(t *testing.T) {
 			router.GET("/partnership", handler.getPartnerships)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/partnership", nil)
+			req := httptest.NewRequest(http.MethodGet, "/partnership", nil)
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Set(userIdCtx, test.userId)
 
@@ -460,7 +466,7 @@ func TestHandler_createUserWorkout(t *testing.T) {
 			inputWorkout:         entity.Workout{},
 			mockBehaviour:        func(r *mockService.MockUser, inputWorkout entity.Workout) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'Workout.Title' Error:Field validation for 'Title' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'Workout.Title' Error:Field validation for 'Title' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:                 "Empty title",
@@ -469,7 +475,7 @@ func TestHandler_createUserWorkout(t *testing.T) {
 			inputWorkout:         entity.Workout{},
 			mockBehaviour:        func(r *mockService.MockUser, inputWorkout entity.Workout) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"Key: 'Workout.Title' Error:Field validation for 'Title' failed on the 'required' tag"}`,
+			expectedResponseBody: `{"error":"Key: 'Workout.Title' Error:Field validation for 'Title' failed on the 'required' tag"}`, //nolint
 		},
 		{
 			name:         "Internal error",
@@ -498,7 +504,7 @@ func TestHandler_createUserWorkout(t *testing.T) {
 			r.POST("/workout", handler.createUserWorkout)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", "/workout",
+			req := httptest.NewRequest(http.MethodPost, "/workout",
 				bytes.NewBufferString(test.inputBody))
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Set(userIdCtx, test.userId)
@@ -532,7 +538,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 			inputBody:     `{"title":"newTitle", "description":"newDesc"}`,
 			updateWorkout: entity.UpdateWorkout{Title: "newTitle", Description: "newDesc"},
 			mockBehaviour: func(r *mockService.MockUser, workoutId, userId int64, input entity.UpdateWorkout) {
-				r.EXPECT().GetWorkoutById(workoutId, userId).Return(&entity.Workout{Id: workoutId, UserId: userId}, nil)
+				r.EXPECT().FormatUpdateWorkout(&input, workoutId, userId).Return(nil)
 				r.EXPECT().UpdateWorkout(workoutId, userId, &input).Return(nil)
 			},
 			expectedStatusCode:   200,
@@ -556,7 +562,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 			updateWorkout:        entity.UpdateWorkout{Title: "newTitle", Description: "newDesc"},
 			mockBehaviour:        func(r *mockService.MockUser, workoutId, userId int64, input entity.UpdateWorkout) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id parameter"}`,
+			expectedResponseBody: `{"error":"invalid id param"}`,
 		},
 		{
 			name:          "Empty workout",
@@ -565,8 +571,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 			inputBody:     `{}`,
 			updateWorkout: entity.UpdateWorkout{},
 			mockBehaviour: func(r *mockService.MockUser, workoutId, userId int64, input entity.UpdateWorkout) {
-				r.EXPECT().GetWorkoutById(workoutId, userId).
-					Return(&entity.Workout{Id: workoutId, UserId: userId}, nil)
+				r.EXPECT().FormatUpdateWorkout(&input, workoutId, userId).Return(nil)
 				r.EXPECT().UpdateWorkout(workoutId, userId, &input).Return(nil)
 			},
 			expectedStatusCode:   200,
@@ -588,7 +593,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 			router.PUT("/workout/:id", handler.updateWorkout)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("PUT", fmt.Sprintf("/workout/%d", test.workoutId),
+			req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/workout/%d", test.workoutId),
 				bytes.NewBufferString(test.inputBody))
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Set(userIdCtx, test.userId)
@@ -598,69 +603,6 @@ func TestHandler_updateWorkout(t *testing.T) {
 
 			assert.Equal(t, w.Code, test.expectedStatusCode)
 			assert.Equal(t, w.Body.String(), test.expectedResponseBody)
-		})
-	}
-}
-
-func TestHandler_deleteWorkout(t *testing.T) {
-	type mockBehaviour func(r *mockService.MockUser, workoutId, userId int64)
-
-	table := []struct {
-		name               string
-		userId             int64
-		workoutId          int64
-		mockBehaviour      mockBehaviour
-		expectedStatusCode int
-	}{
-		{
-			name:      "Ok",
-			userId:    1,
-			workoutId: 1,
-			mockBehaviour: func(r *mockService.MockUser, workoutId, userId int64) {
-				r.EXPECT().DeleteWorkout(workoutId, userId).Return(nil)
-			},
-			expectedStatusCode: 200,
-		},
-		{
-			name:               "Invalid userId",
-			userId:             -1,
-			workoutId:          1,
-			mockBehaviour:      func(r *mockService.MockUser, workoutId, userId int64) {},
-			expectedStatusCode: 500,
-		},
-		{
-			name:      "Invalid workoutId",
-			userId:    1,
-			workoutId: -1,
-			mockBehaviour: func(r *mockService.MockUser, workoutId, userId int64) {
-				r.EXPECT().DeleteWorkout(workoutId, userId).Return(errors.New("invalid workoutId"))
-			},
-			expectedStatusCode: 400,
-		},
-	}
-	for _, test := range table {
-		t.Run(test.name, func(t *testing.T) {
-			c := gomock.NewController(t)
-			defer c.Finish()
-
-			repo := mockService.NewMockUser(c)
-			test.mockBehaviour(repo, test.workoutId, test.userId)
-
-			services := &service.Services{User: repo}
-			handler := &Handler{services: services}
-
-			router := gin.New()
-			router.DELETE("/workout/:id", handler.deleteWorkout)
-
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest("DELETE", fmt.Sprintf("/workout/%d", test.workoutId), nil)
-			ctx, _ := gin.CreateTestContext(w)
-			ctx.Set(userIdCtx, test.userId)
-			req = req.WithContext(ctx)
-
-			router.ServeHTTP(w, req)
-
-			assert.Equal(t, w.Code, test.expectedStatusCode)
 		})
 	}
 }
@@ -737,7 +679,7 @@ func TestHandler_sendRequestToTrainer(t *testing.T) {
 			router.POST("/partnership/trainer/:id", handler.sendRequestToTrainer)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("POST", fmt.Sprintf("/partnership/trainer/%d", test.trainerId), nil)
+			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/partnership/trainer/%d", test.trainerId), nil)
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Set(userIdCtx, test.userId)
 
@@ -745,6 +687,67 @@ func TestHandler_sendRequestToTrainer(t *testing.T) {
 
 			assert.Equal(t, w.Code, test.expectedStatusCode)
 			assert.Equal(t, w.Body.String(), test.expectedResponseBody)
+		})
+	}
+}
+
+func TestHandler_deleteWorkout(t *testing.T) {
+	type mockBehaviour func(r *mockService.MockUser, workoutId, userId int64)
+
+	table := []struct {
+		name               string
+		userId             int64
+		workoutId          int64
+		mockBehaviour      mockBehaviour
+		expectedStatusCode int
+	}{
+		{
+			name:      "Ok",
+			userId:    1,
+			workoutId: 1,
+			mockBehaviour: func(r *mockService.MockUser, workoutId, userId int64) {
+				r.EXPECT().DeleteWorkout(workoutId, userId).Return(nil)
+			},
+			expectedStatusCode: 200,
+		},
+		{
+			name:               "Invalid userId",
+			userId:             -1,
+			workoutId:          1,
+			mockBehaviour:      func(r *mockService.MockUser, workoutId, userId int64) {},
+			expectedStatusCode: 500,
+		},
+		{
+			name:               "Invalid workoutId",
+			userId:             1,
+			workoutId:          -1,
+			mockBehaviour:      func(r *mockService.MockUser, workoutId, userId int64) {},
+			expectedStatusCode: 400,
+		},
+	}
+	for _, test := range table {
+		t.Run(test.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			repo := mockService.NewMockUser(c)
+			test.mockBehaviour(repo, test.workoutId, test.userId)
+
+			services := &service.Services{User: repo}
+			handler := &Handler{services: services}
+
+			router := gin.New()
+			router.DELETE("/workout/:id", handler.deleteWorkout)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/workout/%d", test.workoutId), nil)
+			ctx, _ := gin.CreateTestContext(w)
+			ctx.Set(userIdCtx, test.userId)
+			req = req.WithContext(ctx)
+
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, w.Code, test.expectedStatusCode)
 		})
 	}
 }
@@ -790,7 +793,8 @@ func TestHandler_endPartnershipWithTrainer(t *testing.T) {
 			trainerId: 1,
 			userId:    1,
 			mockBehaviour: func(r *mockService.MockUser, trainerId, userId int64) {
-				r.EXPECT().EndPartnershipWithTrainer(trainerId, userId).Return(int64(-1), errors.New("no partnership to end"))
+				r.EXPECT().EndPartnershipWithTrainer(trainerId, userId).
+					Return(int64(-1), errors.New("no partnership to end"))
 			},
 			expectedStatusCode:   400,
 			expectedResponseBody: `{"error":"no partnership to end"}`,
@@ -800,7 +804,8 @@ func TestHandler_endPartnershipWithTrainer(t *testing.T) {
 			trainerId: 1,
 			userId:    1,
 			mockBehaviour: func(r *mockService.MockUser, trainerId, userId int64) {
-				r.EXPECT().EndPartnershipWithTrainer(trainerId, userId).Return(int64(0), errors.New("internal error"))
+				r.EXPECT().EndPartnershipWithTrainer(trainerId, userId).
+					Return(int64(0), errors.New("internal error"))
 			},
 			expectedStatusCode:   500,
 			expectedResponseBody: `{"error":"internal error"}`,
@@ -821,7 +826,8 @@ func TestHandler_endPartnershipWithTrainer(t *testing.T) {
 			router.PUT("/partnership/trainer/:id", handler.endPartnershipWithTrainer)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("PUT", fmt.Sprintf("/partnership/trainer/%d", test.trainerId), nil)
+			req := httptest.NewRequest(http.MethodPut,
+				fmt.Sprintf("/partnership/trainer/%d", test.trainerId), nil)
 			ctx, _ := gin.CreateTestContext(w)
 			ctx.Set(userIdCtx, test.userId)
 

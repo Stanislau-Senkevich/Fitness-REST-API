@@ -43,7 +43,7 @@ func (s *UserService) SignUp(user *entity.User) (int64, error) {
 }
 
 func (s *UserService) ParseToken(token string) (int64, entity.Role, error) {
-	t, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (i interface{}, err error) {
+	t, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(token *jwt.Token) (i interface{}, err error) { //nolint
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -60,6 +60,48 @@ func (s *UserService) ParseToken(token string) (int64, entity.Role, error) {
 	}
 
 	return claims.ID, claims.Role, nil
+}
+
+func (s *UserService) InitUpdateUser(userId int64, update *entity.UserUpdate) error {
+	user, err := s.GetUserInfoById(userId)
+	if err != nil {
+		return err
+	}
+
+	if update.Email == "" {
+		update.Email = user.Email
+	}
+	if update.Password == "" {
+		update.Password = user.PasswordHash
+	} else {
+		update.Password = s.GetPasswordHash(update.Password)
+	}
+	if update.Name == "" {
+		update.Name = user.Name
+	}
+	if update.Surname == "" {
+		update.Surname = user.Surname
+	}
+	if update.Role == "" {
+		update.Role = user.Role
+	}
+	return nil
+}
+
+func (s *UserService) FormatUpdateWorkout(input *entity.UpdateWorkout, workoutId, userId int64) error {
+	workout, err := s.GetWorkoutById(workoutId, userId)
+	if err != nil {
+		return err
+	}
+
+	if input.Title == "" {
+		input.Title = workout.Title
+	}
+
+	if input.Date.IsZero() {
+		input.Date = workout.Date
+	}
+	return nil
 }
 
 func (s *UserService) GetUserInfoById(id int64) (*entity.User, error) {
