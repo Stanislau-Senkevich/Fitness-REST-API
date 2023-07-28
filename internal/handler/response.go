@@ -11,7 +11,7 @@ type usersResponse struct {
 }
 
 type usersInfoResponse struct {
-	UsersInfo []*entity.UserInfo
+	UsersInfo []*entity.UserInfo `json:"users"`
 }
 
 type partnershipsResponse struct {
