@@ -36,7 +36,7 @@ func TestHandler_getTrainerUsers(t *testing.T) {
 				}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":100,"email":"test1","name":"test1","surname":"test1","created_at":"0001-01-01T00:00:00Z"},{"id":101,"email":"test2","name":"test2","surname":"test2","created_at":"0001-01-01T00:00:00Z"}]`, //nolint
+			expectedResponseBody: `{"users":[{"id":100,"email":"test1","name":"test1","surname":"test1","created_at":"0001-01-01T00:00:00Z"},{"id":101,"email":"test2","name":"test2","surname":"test2","created_at":"0001-01-01T00:00:00Z"}]}`, //nolint
 		},
 		{
 			name:                 "Invalid id",
@@ -52,7 +52,7 @@ func TestHandler_getTrainerUsers(t *testing.T) {
 				r.EXPECT().GetTrainerUsers(trainerId).Return([]*entity.User{}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[]`,
+			expectedResponseBody: `{"users":[]}`,
 		},
 		{
 			name:      "Internal error",
@@ -337,7 +337,7 @@ func TestHandler_getTrainerWorkouts(t *testing.T) {
 				}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":1,"title":"test1","user_id":2,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test2","user_id":3,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":3,"title":"test3","user_id":4,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"}]`, //nolint
+			expectedResponseBody: `{"workouts":[{"id":1,"title":"test1","user_id":2,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test2","user_id":3,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":3,"title":"test3","user_id":4,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"}]}`, //nolint
 		},
 		{
 			name:                 "Invalid id",
@@ -353,7 +353,7 @@ func TestHandler_getTrainerWorkouts(t *testing.T) {
 				r.EXPECT().GetTrainerWorkouts(trainerId).Return([]*entity.Workout{}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[]`,
+			expectedResponseBody: `{"workouts":[]}`,
 		},
 		{
 			name:      "Internal error",
@@ -414,7 +414,7 @@ func TestHandler_getTrainerWorkoutsWithUser(t *testing.T) {
 				}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":1,"title":"test1","user_id":2,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test2","user_id":2,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":3,"title":"test3","user_id":2,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"}]`, //nolint
+			expectedResponseBody: `{"workouts":[{"id":1,"title":"test1","user_id":2,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test2","user_id":2,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":3,"title":"test3","user_id":2,"trainer_id":{"Int64":1,"Valid":true},"date":"0001-01-01T00:00:00Z"}]}`, //nolint
 		},
 		{
 			name:                 "Invalid trainerId",
@@ -440,7 +440,7 @@ func TestHandler_getTrainerWorkoutsWithUser(t *testing.T) {
 				r.EXPECT().GetTrainerWorkoutsWithUser(trainerId, userId).Return([]*entity.Workout{}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[]`,
+			expectedResponseBody: `{"workouts":[]}`,
 		},
 		{
 			name:      "Internal error",

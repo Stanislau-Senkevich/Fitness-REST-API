@@ -225,7 +225,7 @@ func TestHandler_getWorkoutById(t *testing.T) {
 			handler := &Handler{services: services}
 
 			router := gin.New()
-			router.GET("/workout/:id", handler.getWorkoutById)
+			router.GET("/workout/:id", handler.getWorkoutByIdForUser)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/workout/%d", test.workoutId), nil)
@@ -590,7 +590,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 			handler := &Handler{services: services}
 
 			router := gin.New()
-			router.PUT("/workout/:id", handler.updateWorkout)
+			router.PUT("/workout/:id", handler.updateWorkoutForUser)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/workout/%d", test.workoutId),
@@ -737,7 +737,7 @@ func TestHandler_deleteWorkout(t *testing.T) {
 			handler := &Handler{services: services}
 
 			router := gin.New()
-			router.DELETE("/workout/:id", handler.deleteWorkout)
+			router.DELETE("/workout/:id", handler.deleteWorkoutForUser)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/workout/%d", test.workoutId), nil)
