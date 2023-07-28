@@ -3,6 +3,8 @@ package handler
 import (
 	"Fitness_REST_API/internal/service"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Handler struct {
@@ -16,6 +18,7 @@ func NewHandler(services *service.Services) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	h.initAuthRoutes(router)
 	h.initAdminRoutes(router)
 	h.initTrainerRoutes(router)
@@ -61,10 +64,10 @@ func (h *Handler) initTrainerRoutes(router *gin.Engine) {
 
 		trainer.POST("/workout", h.createTrainerWorkout)
 		trainer.GET("/workout", h.getTrainerWorkouts)
-		trainer.GET("/workout/:id", h.getWorkoutById)
+		trainer.GET("/workout/:id", h.getWorkoutByIdForTrainer)
 		trainer.GET("/workout/user/:id", h.getTrainerWorkoutsWithUser)
-		trainer.PUT("/workout/:id", h.updateWorkout)
-		trainer.DELETE("/workout/:id", h.deleteWorkout)
+		trainer.PUT("/workout/:id", h.updateWorkoutForUser)
+		trainer.DELETE("/workout/:id", h.deleteWorkoutForTrainer)
 	}
 }
 
@@ -74,10 +77,10 @@ func (h *Handler) initUserRoutes(router *gin.Engine) {
 		user.GET("/", h.getUserInfo)
 
 		user.GET("/workout", h.getUserWorkouts)
-		user.GET("/workout/:id", h.getWorkoutById)
+		user.GET("/workout/:id", h.getWorkoutByIdForUser)
 		user.POST("/workout", h.createUserWorkout)
-		user.PUT("/workout/:id", h.updateWorkout)
-		user.DELETE("/workout/:id", h.deleteWorkout)
+		user.PUT("/workout/:id", h.updateWorkoutForUser)
+		user.DELETE("/workout/:id", h.deleteWorkoutForTrainer)
 
 		user.GET("/trainer", h.getAllTrainers)
 		user.GET("/trainer/:id", h.getTrainerById)

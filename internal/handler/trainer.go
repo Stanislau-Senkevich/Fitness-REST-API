@@ -9,8 +9,19 @@ import (
 	"strconv"
 )
 
+// @Summary Get clients
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description get information about trainer clients
+// @ID get-trainer-clients
+// @Produce  json
+// @Success 200 {object} usersResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/user [get]
 func (h *Handler) getTrainerUsers(c *gin.Context) {
-	id, err := h.getId(c)
+	id, err := getId(c)
 	if err != nil || id < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -21,11 +32,24 @@ func (h *Handler) getTrainerUsers(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, users)
+	c.JSON(http.StatusOK, usersResponse{
+		Users: users,
+	})
 }
 
+// @Summary Get requests
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description get information about users which send request to trainer
+// @ID get-trainer-requests
+// @Produce  json
+// @Success 200 {object} usersResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/request [get]
 func (h *Handler) getTrainerRequests(c *gin.Context) {
-	id, err := h.getId(c)
+	id, err := getId(c)
 	if err != nil || id < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -39,8 +63,20 @@ func (h *Handler) getTrainerRequests(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+// @Summary Get user by id
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description get information about trainer client
+// @ID get-trainer-user-by-id
+// @Produce  json
+// @Success 200 {object} entity.User
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/user/:id [get]
 func (h *Handler) getTrainerUserById(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -58,8 +94,20 @@ func (h *Handler) getTrainerUserById(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// @Summary Get request by id
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description get information about trainer request by id
+// @ID get-trainer-request
+// @Produce  json
+// @Success 200 {object} entity.Request
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/request/:id [get]
 func (h *Handler) getTrainerRequestById(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -69,16 +117,28 @@ func (h *Handler) getTrainerRequestById(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
 		return
 	}
-	user, err := h.services.GetTrainerRequestById(trainerId, requestId)
+	request, err := h.services.GetTrainerRequestById(trainerId, requestId)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, request)
 }
 
+// @Summary Get workouts
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description get information about trainer workouts
+// @ID get-trainer-workouts
+// @Produce  json
+// @Success 200 {object} workoutsResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/workout [get]
 func (h *Handler) getTrainerWorkouts(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -88,11 +148,25 @@ func (h *Handler) getTrainerWorkouts(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, workouts)
+	c.JSON(http.StatusOK, workoutsResponse{
+		Workouts: workouts,
+	})
 }
 
+// @Summary Get workouts with user
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description get information about trainer workouts with user
+// @ID get-trainer-workouts-user
+// @Produce  json
+// @Success 200 {object} workoutsResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/workout/user/:id [get]
 func (h *Handler) getTrainerWorkoutsWithUser(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -108,11 +182,27 @@ func (h *Handler) getTrainerWorkoutsWithUser(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, workouts)
+	c.JSON(http.StatusOK, workoutsResponse{
+		Workouts: workouts,
+	})
 }
 
+// @Summary Create workout
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description creates workout with user
+// @ID create-workout-as-trainer
+// @Accept  json
+// @Produce  json
+// @Param input body entity.Workout true "workout info"
+// @Success 200 {object} workoutIdResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/workout [post]
 func (h *Handler) createTrainerWorkout(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -135,13 +225,25 @@ func (h *Handler) createTrainerWorkout(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"workout_id": workoutId,
+	c.JSON(http.StatusOK, workoutIdResponse{
+		WorkoutId: workoutId,
 	})
 }
 
+// @Summary Init partnership
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description starts partnership with user if possible
+// @ID init-partnership-with-user
+// @Produce  json
+// @Success 200 {object} partnershipIdResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/user/:id [post]
 func (h *Handler) initPartnershipWithUser(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -161,13 +263,26 @@ func (h *Handler) initPartnershipWithUser(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"partnership_id": pId,
+
+	c.JSON(http.StatusOK, partnershipIdResponse{
+		PartnershipId: pId,
 	})
 }
 
+// @Summary End partnership
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description ends partnership with user if possible
+// @ID end-partnership-with-user
+// @Produce  json
+// @Success 200 {object} partnershipIdResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/user/:id [put]
 func (h *Handler) endPartnershipWithUser(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -189,13 +304,25 @@ func (h *Handler) endPartnershipWithUser(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"partnership_id": pId,
+	c.JSON(http.StatusOK, partnershipIdResponse{
+		PartnershipId: pId,
 	})
 }
 
+// @Summary Accept request
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description accepts request from user by provided request id if possible
+// @ID accept-request
+// @Produce  json
+// @Success 200 {object} partnershipIdResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/request/:id [put]
 func (h *Handler) acceptRequest(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -211,13 +338,26 @@ func (h *Handler) acceptRequest(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"partnership_id": pId,
+
+	c.JSON(http.StatusOK, partnershipIdResponse{
+		PartnershipId: pId,
 	})
 }
 
+// @Summary Deny request
+// @Security ApiKeyAuth
+// @Tags trainer
+// @Description deny and delete request from user by provided request id
+// @ID deny-request
+// @Produce  json
+// @Success 200
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/request/:id [delete]
 func (h *Handler) denyRequest(c *gin.Context) {
-	trainerId, err := h.getId(c)
+	trainerId, err := getId(c)
 	if err != nil || trainerId < 1 {
 		newErrorResponse(c, http.StatusInternalServerError, err)
 		return
@@ -229,6 +369,118 @@ func (h *Handler) denyRequest(c *gin.Context) {
 	}
 
 	err = h.services.DenyRequest(trainerId, requestId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
+// @Summary Get workout by id
+// @Security ApiKeyAuth
+// @Tags user, trainer
+// @Description get information about workout using workout id
+// @ID get-workout-trainer
+// @Produce  json
+// @Success 200 {object} entity.Workout
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/workout/:id [get]
+func (h *Handler) getWorkoutByIdForTrainer(c *gin.Context) {
+	userId, err := getId(c)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || workoutId < 1 {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		return
+	}
+
+	workout, err := h.services.User.GetWorkoutById(workoutId, userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, workout)
+}
+
+// @Summary Update workout
+// @Security ApiKeyAuth
+// @Description updates workout
+// @Tags trainer
+// @ID update-workout-trainer
+// @Accept  json
+// @Produce  json
+// @Param input body entity.UpdateWorkout true "update workout info"
+// @Success 200 {object} workoutIdResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/workout/:id [put]
+func (h *Handler) updateWorkoutForTrainer(c *gin.Context) {
+	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || workoutId < 1 {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		return
+	}
+
+	userId, err := getId(c)
+	if err != nil || userId < 1 {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	var input entity.UpdateWorkout
+	if err := c.ShouldBindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	err = h.services.FormatUpdateWorkout(&input, workoutId, userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+
+	err = h.services.User.UpdateWorkout(workoutId, userId, &input)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, workoutIdResponse{
+		WorkoutId: workoutId,
+	})
+}
+
+// @Summary Delete workout
+// @Security ApiKeyAuth
+// @Description deletes workout
+// @Tags trainer
+// @ID delete-workout-trainer
+// @Produce  json
+// @Success 200
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/workout/:id [delete]
+func (h *Handler) deleteWorkoutForTrainer(c *gin.Context) {
+	userId, err := getId(c)
+	if err != nil || userId < 1 {
+		newErrorResponse(c, http.StatusInternalServerError, err)
+		return
+	}
+	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || workoutId < 1 {
+		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		return
+	}
+	err = h.services.DeleteWorkout(workoutId, userId)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err)
 		return

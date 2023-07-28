@@ -8,6 +8,17 @@ import (
 	"strconv"
 )
 
+// @Summary Get users full info
+// @Security ApiKeyAuth
+// @Tags admin
+// @Description get full information about all users (not trainers)
+// @ID get-users-full-info
+// @Produce  json
+// @Success 200 {object} usersInfoResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /admin/user [get]
 func (h *Handler) getAllUsersFullInfo(c *gin.Context) {
 	info := make([]*entity.UserInfo, 0)
 	idSlice, err := h.services.GetUsersId(entity.UserRole)
@@ -26,6 +37,17 @@ func (h *Handler) getAllUsersFullInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, info)
 }
 
+// @Summary Get trainers full info
+// @Security ApiKeyAuth
+// @Tags admin
+// @Description get full information about all trainers
+// @ID get-trainers-full-info
+// @Produce  json
+// @Success 200 {object} usersInfoResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /admin/trainer [get]
 func (h *Handler) getTrainersInfo(c *gin.Context) {
 	info := make([]*entity.UserInfo, 0)
 	idSlice, err := h.services.GetUsersId(entity.TrainerRole)
@@ -44,6 +66,17 @@ func (h *Handler) getTrainersInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, info)
 }
 
+// @Summary Get user full info
+// @Security ApiKeyAuth
+// @Tags admin
+// @Description get full information about user by id
+// @ID get-user-full-info
+// @Produce  json
+// @Success 200 {object} entity.UserInfo
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /admin/user/:id [get]
 func (h *Handler) getUserFullInfoByID(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || id < 1 {
@@ -59,6 +92,20 @@ func (h *Handler) getUserFullInfoByID(c *gin.Context) {
 	c.JSON(http.StatusOK, userInfo)
 }
 
+// @Summary Create user
+// @Security ApiKeyAuth
+// @Tags admin
+// @Description creates user
+// @ID create-user
+// @Accept  json
+// @Produce  json
+// @Param input body entity.User true "user info"
+// @Success 200 {object} idResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /admin/user [post]
 func (h *Handler) createUser(c *gin.Context) {
 	var inputUser entity.User
 
@@ -86,6 +133,19 @@ func (h *Handler) createUser(c *gin.Context) {
 	})
 }
 
+// @Summary Update user
+// @Security ApiKeyAuth
+// @Tags admin
+// @Description updates user info
+// @ID update-user
+// @Accept  json
+// @Produce  json
+// @Param input body entity.UserUpdate true "update info"
+// @Success 200 {object} idResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /admin/user/:id [put]
 func (h *Handler) updateUser(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || userId < 1 {
@@ -113,6 +173,19 @@ func (h *Handler) updateUser(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// @Summary Delete user
+// @Security ApiKeyAuth
+// @Tags admin
+// @Description deletes user
+// @ID delete-user
+// @Accept  json
+// @Produce  json
+// @Param input body entity.UserUpdate true "update info"
+// @Success 200 {object} idResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /admin/user/:id [delete]
 func (h *Handler) deleteUser(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || userId < 1 {

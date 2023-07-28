@@ -183,7 +183,7 @@ func (r *UserRepository) GetTrainers() ([]*entity.User, error) {
 
 func (r *UserRepository) GetTrainerById(id int64) (*entity.User, error) {
 	var trainer entity.User
-	query := fmt.Sprintf("SELECT * FROM %s WHERE role = 'trainer' AND id = $1", userTable)
+	query := fmt.Sprintf("SELECT id, email, name, surname FROM %s WHERE role = 'trainer' AND id = $1", userTable)
 	err := r.db.Get(&trainer, query, id)
 	if err != nil {
 		return nil, err

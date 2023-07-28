@@ -1,5 +1,5 @@
 .idea
-archive
 .bin
 .env
 .database
+testDataHelper.txt

@@ -20,10 +20,18 @@ type signInResponse struct {
 	Token string `json:"token"`
 }
 
-type signUpResponse struct {
-	Id int64 `json:"id"`
-}
-
+// @Summary Sign Up
+// @Tags auth
+// @Description creates user account
+// @ID create-account
+// @Accept  json
+// @Produce  json
+// @Param input body entity.User true "account info"
+// @Success 200 {object} idResponse
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/sign-up [post]
 func (h *Handler) signUp(c *gin.Context) {
 	var inputUser entity.User
 
@@ -42,11 +50,23 @@ func (h *Handler) signUp(c *gin.Context) {
 			return
 		}
 	}
-	c.JSON(http.StatusOK, signUpResponse{
+	c.JSON(http.StatusOK, idResponse{
 		Id: id,
 	})
 }
 
+// @Summary Sign In
+// @Tags auth
+// @Description sign-in
+// @ID sign-in
+// @Accept  json
+// @Produce  json
+// @Param input body userSignInInput true "account info"
+// @Success 200 {object} signInResponse
+// @Failure 400,401,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/sign-in [post]
 func (h *Handler) signIn(c *gin.Context) {
 	var input userSignInInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -65,6 +85,18 @@ func (h *Handler) signIn(c *gin.Context) {
 	})
 }
 
+// @Summary Sign In for admin
+// @Tags auth
+// @Description sign-in as admin
+// @ID admin-sign-in
+// @Accept  json
+// @Produce  json
+// @Param input body adminSignInInput true "account info"
+// @Success 200 {object} signInResponse
+// @Failure 400,401,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /admin/auth/sign-in [post]
 func (h *Handler) adminSignIn(c *gin.Context) {
 	var input adminSignInInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -83,6 +115,18 @@ func (h *Handler) adminSignIn(c *gin.Context) {
 	})
 }
 
+// @Summary Sign In for trainer
+// @Tags auth
+// @Description sign-in as trainer
+// @ID trainer-sign-in
+// @Accept  json
+// @Produce  json
+// @Param input body userSignInInput true "account info"
+// @Success 200 {object} signInResponse
+// @Failure 400,401,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /trainer/auth/sign-in [post]
 func (h *Handler) trainerSignIn(c *gin.Context) {
 	var input userSignInInput
 	if err := c.ShouldBindJSON(&input); err != nil {

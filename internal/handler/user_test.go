@@ -108,7 +108,7 @@ func TestHandler_getUserWorkouts(t *testing.T) {
 					}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":0,"title":"test1","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"description":"test1","date":"0001-01-01T00:00:00Z"},{"id":0,"title":"test2","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]`, //nolint
+			expectedResponseBody: `{"workouts":[{"id":0,"title":"test1","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"description":"test1","date":"0001-01-01T00:00:00Z"},{"id":0,"title":"test2","user_id":0,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]}`, //nolint
 		},
 		{
 			name:   "Empty workout",
@@ -118,7 +118,7 @@ func TestHandler_getUserWorkouts(t *testing.T) {
 					[]*entity.Workout{}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[]`,
+			expectedResponseBody: `{"workouts":[]}`,
 		},
 		{
 			name:                 "Invalid id",
@@ -256,7 +256,7 @@ func TestHandler_getAllTrainers(t *testing.T) {
 					Return([]*entity.User{{Email: "test"}, {Email: "test2"}}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":0,"email":"test","name":"","surname":"","created_at":"0001-01-01T00:00:00Z"},{"id":0,"email":"test2","name":"","surname":"","created_at":"0001-01-01T00:00:00Z"}]`, //nolint
+			expectedResponseBody: `{"users":[{"id":0,"email":"test","name":"","surname":"","created_at":"0001-01-01T00:00:00Z"},{"id":0,"email":"test2","name":"","surname":"","created_at":"0001-01-01T00:00:00Z"}]}`, //nolint
 		},
 		{
 			name: "Internal error",
@@ -372,7 +372,7 @@ func TestHandler_getPartnerships(t *testing.T) {
 						nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[{"id":1,"user_id":1,"trainer_id":1,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":2,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}]`, //nolint
+			expectedResponseBody: `{"partnerships":[{"id":1,"user_id":1,"trainer_id":1,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":2,"status":"","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}]}`, //nolint
 		},
 		{
 			name:   "No partnerships",
@@ -381,7 +381,7 @@ func TestHandler_getPartnerships(t *testing.T) {
 				r.EXPECT().GetUserPartnerships(userId).Return([]*entity.Partnership{}, nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `[]`,
+			expectedResponseBody: `{"partnerships":[]}`,
 		},
 		{
 			name:                 "Invalid userId",
@@ -448,7 +448,7 @@ func TestHandler_createUserWorkout(t *testing.T) {
 				r.EXPECT().CreateWorkoutAsUser(&inputWorkout).Return(int64(1), nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `{"id":1}`,
+			expectedResponseBody: `{"workout_id":1}`,
 		},
 		{
 			name:                 "Invalid User Id in workout",
@@ -542,7 +542,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 				r.EXPECT().UpdateWorkout(workoutId, userId, &input).Return(nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `{"id":1}`,
+			expectedResponseBody: `{"workout_id":1}`,
 		},
 		{
 			name:                 "Invalid userId",
@@ -575,7 +575,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 				r.EXPECT().UpdateWorkout(workoutId, userId, &input).Return(nil)
 			},
 			expectedStatusCode:   200,
-			expectedResponseBody: `{"id":1}`,
+			expectedResponseBody: `{"workout_id":1}`,
 		},
 	}
 	for _, test := range table {

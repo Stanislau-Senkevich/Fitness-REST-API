@@ -11,6 +11,17 @@ import (
 	"log"
 )
 
+// @title Fitness REST API
+// @version 1.0
+// @description API Server for Fitness application
+
+// @host 143.198.157.158:8001
+// @BasePath /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 	cfg, err := config.InitConfig()
