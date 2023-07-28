@@ -1,6 +1,7 @@
 package handler
 
 import (
+	_ "Fitness_REST_API/docs"
 	"Fitness_REST_API/internal/service"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
