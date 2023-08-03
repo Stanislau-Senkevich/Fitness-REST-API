@@ -80,7 +80,7 @@ func (h *Handler) getTrainersInfo(c *gin.Context) {
 func (h *Handler) getUserFullInfoByID(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || id < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -149,7 +149,7 @@ func (h *Handler) createUser(c *gin.Context) {
 func (h *Handler) updateUser(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || userId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -189,7 +189,7 @@ func (h *Handler) updateUser(c *gin.Context) {
 func (h *Handler) deleteUser(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || userId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 

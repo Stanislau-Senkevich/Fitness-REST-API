@@ -216,11 +216,11 @@ func TestHandler_getUserFullInfoById(t *testing.T) {
 			expectedResponseBody: `{"id":1,"email":"test","role":"user","name":"test","surname":"test","created_at":"0001-01-01T00:00:00Z","partnerships":[{"id":1,"user_id":1,"trainer_id":3,"status":"approved","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}},{"id":2,"user_id":1,"trainer_id":5,"status":"request","created_at":"0001-01-01T00:00:00Z","ended_at":{"Time":"0001-01-01T00:00:00Z","Valid":false}}],"workouts":[{"id":1,"title":"test","user_id":1,"trainer_id":{"Int64":2,"Valid":true},"date":"0001-01-01T00:00:00Z"},{"id":2,"title":"test","user_id":1,"trainer_id":{"Int64":0,"Valid":false},"date":"0001-01-01T00:00:00Z"}]}`, //nolint
 		},
 		{
-			name:                 "Invalid id param",
+			name:                 "invalid id parameter",
 			userId:               -1,
 			mockBehaviour:        func(r *mockService.MockAdmin, userId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:   "Invalid id",
@@ -489,7 +489,7 @@ func TestHandler_deleteUser(t *testing.T) {
 			expectedStatusCode: 200,
 		},
 		{
-			name:               "Invalid id param",
+			name:               "invalid id parameter",
 			userId:             -1,
 			mockBehaviour:      func(r *mockService.MockAdmin, userId int64) {},
 			expectedStatusCode: 400,

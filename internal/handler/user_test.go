@@ -192,7 +192,7 @@ func TestHandler_getWorkoutById(t *testing.T) {
 			workoutId:            -1,
 			mockBehaviour:        func(r *mockService.MockUser, workoutId, userId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:      "No workout was found or no access to workout",
@@ -315,7 +315,7 @@ func TestHandler_getTrainerById(t *testing.T) {
 			trainerId:            -1,
 			mockBehaviour:        func(r *mockService.MockUser, trainerId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:      "No trainer was found",
@@ -324,7 +324,7 @@ func TestHandler_getTrainerById(t *testing.T) {
 				r.EXPECT().GetTrainerById(trainerId).Return(nil, errors.New("no trainer"))
 			},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"no trainer was found on provided id"}`,
+			expectedResponseBody: `{"error":"no trainer"}`,
 		},
 	}
 	for _, test := range table {
@@ -562,7 +562,7 @@ func TestHandler_updateWorkout(t *testing.T) {
 			updateWorkout:        entity.UpdateWorkout{Title: "newTitle", Description: "newDesc"},
 			mockBehaviour:        func(r *mockService.MockUser, workoutId, userId int64, input entity.UpdateWorkout) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:          "Empty workout",
@@ -641,7 +641,7 @@ func TestHandler_sendRequestToTrainer(t *testing.T) {
 			userId:               1,
 			mockBehaviour:        func(r *mockService.MockUser, trainerId, userId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:      "Approved partnership already exists",
@@ -786,7 +786,7 @@ func TestHandler_endPartnershipWithTrainer(t *testing.T) {
 			userId:               1,
 			mockBehaviour:        func(r *mockService.MockUser, trainerId, userId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:      "No partnership to end",

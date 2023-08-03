@@ -83,7 +83,7 @@ func (h *Handler) getTrainerUserById(c *gin.Context) {
 	}
 	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || userId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 	user, err := h.services.GetTrainerUserById(trainerId, userId)
@@ -114,7 +114,7 @@ func (h *Handler) getTrainerRequestById(c *gin.Context) {
 	}
 	requestId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || requestId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 	request, err := h.services.GetTrainerRequestById(trainerId, requestId)
@@ -173,7 +173,7 @@ func (h *Handler) getTrainerWorkoutsWithUser(c *gin.Context) {
 	}
 	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || userId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -250,7 +250,7 @@ func (h *Handler) initPartnershipWithUser(c *gin.Context) {
 	}
 	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || userId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -289,7 +289,7 @@ func (h *Handler) endPartnershipWithUser(c *gin.Context) {
 	}
 	userId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || userId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -329,7 +329,7 @@ func (h *Handler) acceptRequest(c *gin.Context) {
 	}
 	requestId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || requestId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -364,7 +364,7 @@ func (h *Handler) denyRequest(c *gin.Context) {
 	}
 	requestId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || requestId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -396,7 +396,7 @@ func (h *Handler) getWorkoutByIdForTrainer(c *gin.Context) {
 	}
 	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || workoutId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -425,7 +425,7 @@ func (h *Handler) getWorkoutByIdForTrainer(c *gin.Context) {
 func (h *Handler) updateWorkoutForTrainer(c *gin.Context) {
 	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || workoutId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 
@@ -477,7 +477,7 @@ func (h *Handler) deleteWorkoutForTrainer(c *gin.Context) {
 	}
 	workoutId, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || workoutId < 1 {
-		newErrorResponse(c, http.StatusBadRequest, errors.New("invalid id param"))
+		newErrorResponse(c, http.StatusBadRequest, ErrorInvalidIdParameter)
 		return
 	}
 	err = h.services.DeleteWorkout(workoutId, userId)

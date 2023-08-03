@@ -194,7 +194,7 @@ func TestHandler_getTrainerUserById(t *testing.T) {
 			userId:               -2,
 			mockBehaviour:        func(r *mock_service.MockUser, trainerId, userId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:                 "Invalid trainerId",
@@ -270,7 +270,7 @@ func TestHandler_getTrainerRequestById(t *testing.T) {
 			requestId:            -2,
 			mockBehaviour:        func(r *mock_service.MockUser, trainerId, requestId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:                 "Invalid trainerId",
@@ -430,7 +430,7 @@ func TestHandler_getTrainerWorkoutsWithUser(t *testing.T) {
 			userId:               -2,
 			mockBehaviour:        func(r *mock_service.MockUser, trainerId, userId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:      "No workouts",
@@ -601,7 +601,7 @@ func TestHandler_initPartnershipWithUser(t *testing.T) {
 			userId:               -2,
 			mockBehaviour:        func(r *mock_service.MockUser, trainerId, userId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:                 "Invalid id",
@@ -685,7 +685,7 @@ func TestHandler_endPartnershipWithUser(t *testing.T) {
 			userId:               -2,
 			mockBehaviour:        func(r *mock_service.MockUser, trainerId, userId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:                 "Invalid id",
@@ -769,7 +769,7 @@ func TestHandler_acceptRequest(t *testing.T) {
 			requestId:            -2,
 			mockBehaviour:        func(r *mock_service.MockUser, trainerId, requestId int64) {},
 			expectedStatusCode:   400,
-			expectedResponseBody: `{"error":"invalid id param"}`,
+			expectedResponseBody: `{"error":"invalid id parameter"}`,
 		},
 		{
 			name:                 "Invalid trainerId",
