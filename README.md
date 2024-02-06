@@ -53,32 +53,33 @@ To see all the endpoints follow the link: http://droplet.senkevichdev.work:8001/
 -----------------
 
 ## Tools and libraries
-### Database
-- **jmoiron/sqlx**: Used for database interactions in a more ergonomic way than raw SQL.
 
-- **lib/pq**: v1.10.9: PostgreSQL driver for Go's database/sql package.
+### Database (db)
 
-### API
-- **gin-gonic/gin**: Web framework for Go. It features a Martini-like API with much better performance, up to 40 times faster.
+- `jmoiron/sqlx`: Database interactions.
+- `lib/pq`: PostgreSQL driver.
 
-### Authentication
- - **dgrijalva/jwt-go**: Provides a straightforward way to create and verify JWT.
+### API (api)
 
-### Configuration
+- `gin-gonic/gin`: Web framework for Go.
 
-- **spf13/viper**: Complete configuration solution for Go applications.
+### Authentication (auth)
 
-### Testing
-- **golang/mock**: Testing package generates mock implementations of Go interfaces.
+- `dgrijalva/jwt-go`: JWT functionality.
 
-- **stretchr/testify**: Toolkit with various packages that provide many assertion functions.
+### Configuration (config)
 
-- **zhashkevych/go-sqlxmock**: Provides mocking functionality for the sqlx package.
+- `spf13/viper`: Go configuration solution.
 
-### Documentation
-- **swaggo/files**: Serves swagger files from the general filesystem.
+### Testing (tests)
 
-- **swaggo/gin-swagger**: Gin middleware to automatically generate RESTful API documentation with Swagger 2.0.
+- `golang/mock`: Mocking functionality.
+- `stretchr/testify`: Assertion functions.
+- `zhashkevych/go-sqlxmock`: Mocking functionality for SQLX.
 
-- **swaggo/swag**: Go documentation tool for API documentation. It extracts comments from Go source files and turns them into a formatted documentation.
+### Documentation (docs)
+
+- `swaggo/files`: Serving Swagger files.
+- `swaggo/gin-swagger`: Gin middleware for API documentation.
+- `swaggo/swag`: Go documentation tool.
 
