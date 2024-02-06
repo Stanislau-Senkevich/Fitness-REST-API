@@ -7,15 +7,18 @@ import (
 	"Fitness_REST_API/internal/repository/postgres"
 	"Fitness_REST_API/internal/server"
 	"Fitness_REST_API/internal/service"
+	"context"
 	"github.com/sirupsen/logrus"
-	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // @title Fitness REST API
 // @version 1.0
 // @description API Server for Fitness application
 
-// @host 143.198.157.158:8001
+// @host droplet.senkevichdev.work:8001
 // @BasePath /
 
 // @securityDefinitions.apikey ApiKeyAuth
@@ -45,8 +48,18 @@ func main() {
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 
-	err = srv.Run(cfg.Port, handlers.InitRoutes())
-	if err != nil {
-		log.Fatalf("error due running server: %s", err.Error())
+	go func() {
+		err = srv.Run(cfg.Port, handlers.InitRoutes())
+		if err != nil {
+			logrus.Fatalf("error due running server: %s", err.Error())
+		}
+	}()
+
+	closeChan := make(chan os.Signal, 1)
+	signal.Notify(closeChan, syscall.SIGTERM, syscall.SIGINT)
+	<-closeChan
+
+	if err = srv.ShutDown(context.Background()); err != nil {
+		logrus.Fatalf("Error due shutdown: %s", err.Error())
 	}
 }
